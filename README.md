@@ -4,7 +4,7 @@
 
 In each of the directories in this repository there will be a README.md that contains a link to deploy that template to Azure. You will need to fill in the form, once launched in the Azure Portal, with the proper values (e.g. number of compute nodes). 
 
-Currently there are Unbuntu 16.04 LTS and CentOS 7.5 images.
+Currently there are templates for Unbuntu 16.04 LTS and CentOS 7.4.
 
 ## Using the cluster
 
