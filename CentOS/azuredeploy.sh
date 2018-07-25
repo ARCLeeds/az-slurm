@@ -71,20 +71,9 @@ sudo yum -y install rpm-build
 
 wget https://download.schedmd.com/slurm/slurm-17.11.8.tar.bz2 >> /tmp/azuredeploy.log.$$ 2>&1
 sudo yum install -y hwloc-devel hwloc-libs hdf5-devel munge-devel munge-libs numactl-devel numactl-libs readline-devel openssl-devel pam-devel perl-ExtUtils-MakeMaker mariadb-devel >> /tmp/azuredeploy.log.$$ 2>&1
-rpmbuild -ta slurm-17.11.8.tar.bz2 >> /tmp/azuredeploy.log.$$ 2>&1
 
 # Create the slurm user
 sudo useradd -c "Slurm scheduler" slurm
-
-# Install the packages needed on the master
-sudo yum -y install rpmbuild/RPMS/x86_64/slurm-17.11.8-1.el7.x86_64.rpm \
-rpmbuild/RPMS/x86_64/slurm-contribs-17.11.8-1.el7.x86_64.rpm \
-rpmbuild/RPMS/x86_64/slurm-example-configs-17.11.8-1.el7.x86_64.rpm \
-rpmbuild/RPMS/x86_64/slurm-pam_slurm-17.11.8-1.el7.x86_64.rpm \
-rpmbuild/RPMS/x86_64/slurm-perlapi-17.11.8-1.el7.x86_64.rpm \
-rpmbuild/RPMS/x86_64/slurm-libpmi-17.11.8-1.el7.x86_64.rpm \
-rpmbuild/RPMS/x86_64/slurm-slurmctld-17.11.8-1.el7.x86_64.rpm \
-rpmbuild/RPMS/x86_64/slurm-slurmdbd-17.11.8-1.el7.x86_64.rpm >> /tmp/azuredeploy.log.$$ 2>&1
 
 # Download slurm.conf and fill in the node info
 SLURMCONF=/tmp/slurm.conf.$$
@@ -92,14 +81,10 @@ wget $TEMPLATE_BASE/slurm.template.conf -O $SLURMCONF >> /tmp/azuredeploy.log.$$
 sed -i -- 's/__MASTERNODE__/'"$MASTER_NAME"'/g' $SLURMCONF >> /tmp/azuredeploy.log.$$ 2>&1
 lastvm=`expr $NUM_OF_VM - 1`
 sed -i -- 's/__WORKERNODES__/'"$WORKER_NAME"'[0-'"$lastvm"']/g' $SLURMCONF >> /tmp/azuredeploy.log.$$ 2>&1
-sudo cp -f $SLURMCONF /etc/slurm/slurm.conf >> /tmp/azuredeploy.log.$$ 2>&1
-sudo chown slurm /etc/slurm/slurm.conf >> /tmp/azuredeploy.log.$$ 2>&1
 sudo chmod o+w /var/spool # Write access for slurmctld log. Consider switch log file to another location
 sudo systemctl daemon-reload >> /tmp/azuredeploy.log.$$ 2>&1
 sudo systemctl enable munge >> /tmp/azuredeploy.log.$$ 2>&1
 sudo systemctl start munge >> /tmp/azuredeploy.log.$$ 2>&1 # Start munged
-sudo systemctl enable slurmctld >> /tmp/azuredeploy.log.$$ 2>&1
-sudo systemctl start  slurmctld >> /tmp/azuredeploy.log.$$ 2>&1 # Start the master daemon service
 
 # Install slurm on all nodes by running apt-get
 # Also push munge key and slurm.conf to them
@@ -120,12 +105,6 @@ do
    sudo -u $ADMIN_USERNAME scp $mungekey $ADMIN_USERNAME@$worker:/tmp/munge.key >> /tmp/azuredeploy.log.$$ 2>&1 
    sudo -u $ADMIN_USERNAME scp $SLURMCONF $ADMIN_USERNAME@$worker:/tmp/slurm.conf >> /tmp/azuredeploy.log.$$ 2>&1
    sudo -u $ADMIN_USERNAME scp /tmp/hosts.$$ $ADMIN_USERNAME@$worker:/tmp/hosts >> /tmp/azuredeploy.log.$$ 2>&1
-   sudo -u $ADMIN_USERNAME scp /home/$ADMIN_USERNAME/rpmbuild/RPMS/x86_64/slurm-17.11.8-1.el7.x86_64.rpm $ADMIN_USERNAME@$worker:/tmp/slurm-17.11.8-1.el7.x86_64.rpm >> /tmp/azuredeploy.log.$$ 2>&1
-   sudo -u $ADMIN_USERNAME scp /home/$ADMIN_USERNAME/rpmbuild/RPMS/x86_64/slurm-contribs-17.11.8-1.el7.x86_64.rpm $ADMIN_USERNAME@$worker:/tmp/slurm-contribs-17.11.8-1.el7.x86_64.rpm >> /tmp/azuredeploy.log.$$ 2>&1
-   sudo -u $ADMIN_USERNAME scp /home/$ADMIN_USERNAME/rpmbuild/RPMS/x86_64/slurm-example-configs-17.11.8-1.el7.x86_64.rpm $ADMIN_USERNAME@$worker:/tmp/slurm-example-configs-17.11.8-1.el7.x86_64.rpm >> /tmp/azuredeploy.log.$$ 2>&1
-   sudo -u $ADMIN_USERNAME scp /home/$ADMIN_USERNAME/rpmbuild/RPMS/x86_64/slurm-libpmi-17.11.8-1.el7.x86_64.rpm $ADMIN_USERNAME@$worker:/tmp/slurm-libpmi-17.11.8-1.el7.x86_64.rpm >> /tmp/azuredeploy.log.$$ 2>&1
-   sudo -u $ADMIN_USERNAME scp /home/$ADMIN_USERNAME/rpmbuild/RPMS/x86_64/slurm-pam_slurm-17.11.8-1.el7.x86_64.rpm $ADMIN_USERNAME@$worker:/tmp/slurm-pam_slurm-17.11.8-1.el7.x86_64.rpm >> /tmp/azuredeploy.log.$$ 2>&1
-   sudo -u $ADMIN_USERNAME scp /home/$ADMIN_USERNAME/rpmbuild/RPMS/x86_64/slurm-slurmd-17.11.8-1.el7.x86_64.rpm $ADMIN_USERNAME@$worker:/tmp/slurm-slurmd-17.11.8-1.el7.x86_64.rpm >> /tmp/azuredeploy.log.$$ 2>&1
 
    echo "Remote execute on $worker" >> /tmp/azuredeploy.log.$$ 2>&1 
    sudo -u $ADMIN_USERNAME ssh $ADMIN_USERNAME@$worker >> /tmp/azuredeploy.log.$$ 2>&1 << 'ENDSSH1'
@@ -133,7 +112,6 @@ do
       sudo chmod g-w /var/log
       sudo useradd -c "Slurm scheduler" slurm
       sudo yum -y install munge
-      sudo yum -y install /tmp/slurm-17.11.8-1.el7.x86_64.rpm /tmp/slurm-contribs-17.11.8-1.el7.x86_64.rpm /tmp/slurm-example-configs-17.11.8-1.el7.x86_64.rpm /tmp/slurm-libpmi-17.11.8-1.el7.x86_64.rpm /tmp/slurm-pam_slurm-17.11.8-1.el7.x86_64.rpm /tmp/slurm-slurmd-17.11.8-1.el7.x86_64.rpm
       sudo cp -f /tmp/munge.key /etc/munge/munge.key
       sudo chown munge /etc/munge/munge.key
       sudo chgrp munge /etc/munge/munge.key
@@ -141,10 +119,6 @@ do
       sudo systemctl daemon-reload
       sudo systemctl enable munge
       sudo systemctl start munge
-      sudo cp -f /tmp/slurm.conf /etc/slurm/slurm.conf
-      sudo chown slurm /etc/slurm/slurm.conf
-      sudo systemctl enable slurmd
-      sudo systemctl start  slurmd
       sudo yum -y install openmpi
 ENDSSH1
 
