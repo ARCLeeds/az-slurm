@@ -73,6 +73,12 @@ wget https://download.schedmd.com/slurm/slurm-17.11.8.tar.bz2 >> /tmp/azuredeplo
 sudo yum install -y hwloc-devel hwloc-libs hdf5-devel munge-devel munge-libs numactl-devel numactl-libs readline-devel openssl-devel pam-devel perl-ExtUtils-MakeMaker mariadb-devel >> /tmp/azuredeploy.log.$$ 2>&1
 rpmbuild -ta slurm-17.11.8.tar.bz2 >> /tmp/azuredeploy.log.$$ 2>&1
 
+# Generate the munge key
+dd if=/dev/urandom bs=1 count=1024 >/tmp/munge.key
+sudo chown munge:munge /tmp/munge.key
+sudo chmod 600 /tmp/munge.key
+sudo mv /tmp/munge.key /etc/munge/munge.key
+
 # Create the slurm user
 sudo useradd -c "Slurm scheduler" slurm
 
@@ -129,6 +135,7 @@ do
 
    echo "Remote execute on $worker" >> /tmp/azuredeploy.log.$$ 2>&1 
    sudo -u $ADMIN_USERNAME ssh $ADMIN_USERNAME@$worker >> /tmp/azuredeploy.log.$$ 2>&1 << 'ENDSSH1'
+      echo $ADMIN_PASSWORD | sudo -S hostname
       sudo sh -c "cat /tmp/hosts >> /etc/hosts"
       sudo chmod g-w /var/log
       sudo useradd -c "Slurm scheduler" slurm
