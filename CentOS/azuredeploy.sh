@@ -77,14 +77,14 @@ rpmbuild -ta slurm-17.11.8.tar.bz2 >> /tmp/azuredeploy.log.$$ 2>&1
 sudo useradd -c "Slurm scheduler" slurm
 
 # Install the packages needed on the master
-sudo yum -y install rpmbuild/RPMS/x86_64/slurm-17.11.8-1.el7.x86_64.rpm \
-rpmbuild/RPMS/x86_64/slurm-contribs-17.11.8-1.el7.x86_64.rpm \
-rpmbuild/RPMS/x86_64/slurm-example-configs-17.11.8-1.el7.x86_64.rpm \
-rpmbuild/RPMS/x86_64/slurm-pam_slurm-17.11.8-1.el7.x86_64.rpm \
-rpmbuild/RPMS/x86_64/slurm-perlapi-17.11.8-1.el7.x86_64.rpm \
-rpmbuild/RPMS/x86_64/slurm-libpmi-17.11.8-1.el7.x86_64.rpm \
-rpmbuild/RPMS/x86_64/slurm-slurmctld-17.11.8-1.el7.x86_64.rpm \
-rpmbuild/RPMS/x86_64/slurm-slurmdbd-17.11.8-1.el7.x86_64.rpm >> /tmp/azuredeploy.log.$$ 2>&1
+sudo yum -y install /rpmbuild/RPMS/x86_64/slurm-17.11.8-1.el7.x86_64.rpm \
+/rpmbuild/RPMS/x86_64/slurm-contribs-17.11.8-1.el7.x86_64.rpm \
+/rpmbuild/RPMS/x86_64/slurm-example-configs-17.11.8-1.el7.x86_64.rpm \
+/rpmbuild/RPMS/x86_64/slurm-pam_slurm-17.11.8-1.el7.x86_64.rpm \
+/rpmbuild/RPMS/x86_64/slurm-perlapi-17.11.8-1.el7.x86_64.rpm \
+/rpmbuild/RPMS/x86_64/slurm-libpmi-17.11.8-1.el7.x86_64.rpm \
+/rpmbuild/RPMS/x86_64/slurm-slurmctld-17.11.8-1.el7.x86_64.rpm \
+/rpmbuild/RPMS/x86_64/slurm-slurmdbd-17.11.8-1.el7.x86_64.rpm >> /tmp/azuredeploy.log.$$ 2>&1
 
 # Download slurm.conf and fill in the node info
 SLURMCONF=/tmp/slurm.conf.$$
@@ -120,12 +120,12 @@ do
    sudo -u $ADMIN_USERNAME scp $mungekey $ADMIN_USERNAME@$worker:/tmp/munge.key >> /tmp/azuredeploy.log.$$ 2>&1 
    sudo -u $ADMIN_USERNAME scp $SLURMCONF $ADMIN_USERNAME@$worker:/tmp/slurm.conf >> /tmp/azuredeploy.log.$$ 2>&1
    sudo -u $ADMIN_USERNAME scp /tmp/hosts.$$ $ADMIN_USERNAME@$worker:/tmp/hosts >> /tmp/azuredeploy.log.$$ 2>&1
-   sudo -u $ADMIN_USERNAME scp /home/$ADMIN_USERNAME/rpmbuild/RPMS/x86_64/slurm-17.11.8-1.el7.x86_64.rpm $ADMIN_USERNAME@$worker:/tmp/slurm-17.11.8-1.el7.x86_64.rpm >> /tmp/azuredeploy.log.$$ 2>&1
-   sudo -u $ADMIN_USERNAME scp /home/$ADMIN_USERNAME/rpmbuild/RPMS/x86_64/slurm-contribs-17.11.8-1.el7.x86_64.rpm $ADMIN_USERNAME@$worker:/tmp/slurm-contribs-17.11.8-1.el7.x86_64.rpm >> /tmp/azuredeploy.log.$$ 2>&1
-   sudo -u $ADMIN_USERNAME scp /home/$ADMIN_USERNAME/rpmbuild/RPMS/x86_64/slurm-example-configs-17.11.8-1.el7.x86_64.rpm $ADMIN_USERNAME@$worker:/tmp/slurm-example-configs-17.11.8-1.el7.x86_64.rpm >> /tmp/azuredeploy.log.$$ 2>&1
-   sudo -u $ADMIN_USERNAME scp /home/$ADMIN_USERNAME/rpmbuild/RPMS/x86_64/slurm-libpmi-17.11.8-1.el7.x86_64.rpm $ADMIN_USERNAME@$worker:/tmp/slurm-libpmi-17.11.8-1.el7.x86_64.rpm >> /tmp/azuredeploy.log.$$ 2>&1
-   sudo -u $ADMIN_USERNAME scp /home/$ADMIN_USERNAME/rpmbuild/RPMS/x86_64/slurm-pam_slurm-17.11.8-1.el7.x86_64.rpm $ADMIN_USERNAME@$worker:/tmp/slurm-pam_slurm-17.11.8-1.el7.x86_64.rpm >> /tmp/azuredeploy.log.$$ 2>&1
-   sudo -u $ADMIN_USERNAME scp /home/$ADMIN_USERNAME/rpmbuild/RPMS/x86_64/slurm-slurmd-17.11.8-1.el7.x86_64.rpm $ADMIN_USERNAME@$worker:/tmp/slurm-slurmd-17.11.8-1.el7.x86_64.rpm >> /tmp/azuredeploy.log.$$ 2>&1
+   sudo -u $ADMIN_USERNAME scp /rpmbuild/RPMS/x86_64/slurm-17.11.8-1.el7.x86_64.rpm $ADMIN_USERNAME@$worker:/tmp/slurm-17.11.8-1.el7.x86_64.rpm >> /tmp/azuredeploy.log.$$ 2>&1
+   sudo -u $ADMIN_USERNAME scp /rpmbuild/RPMS/x86_64/slurm-contribs-17.11.8-1.el7.x86_64.rpm $ADMIN_USERNAME@$worker:/tmp/slurm-contribs-17.11.8-1.el7.x86_64.rpm >> /tmp/azuredeploy.log.$$ 2>&1
+   sudo -u $ADMIN_USERNAME scp /rpmbuild/RPMS/x86_64/slurm-example-configs-17.11.8-1.el7.x86_64.rpm $ADMIN_USERNAME@$worker:/tmp/slurm-example-configs-17.11.8-1.el7.x86_64.rpm >> /tmp/azuredeploy.log.$$ 2>&1
+   sudo -u $ADMIN_USERNAME scp /rpmbuild/RPMS/x86_64/slurm-libpmi-17.11.8-1.el7.x86_64.rpm $ADMIN_USERNAME@$worker:/tmp/slurm-libpmi-17.11.8-1.el7.x86_64.rpm >> /tmp/azuredeploy.log.$$ 2>&1
+   sudo -u $ADMIN_USERNAME scp /rpmbuild/RPMS/x86_64/slurm-pam_slurm-17.11.8-1.el7.x86_64.rpm $ADMIN_USERNAME@$worker:/tmp/slurm-pam_slurm-17.11.8-1.el7.x86_64.rpm >> /tmp/azuredeploy.log.$$ 2>&1
+   sudo -u $ADMIN_USERNAME scp /rpmbuild/RPMS/x86_64/slurm-slurmd-17.11.8-1.el7.x86_64.rpm $ADMIN_USERNAME@$worker:/tmp/slurm-slurmd-17.11.8-1.el7.x86_64.rpm >> /tmp/azuredeploy.log.$$ 2>&1
 
    echo "Remote execute on $worker" >> /tmp/azuredeploy.log.$$ 2>&1 
    sudo -u $ADMIN_USERNAME ssh $ADMIN_USERNAME@$worker >> /tmp/azuredeploy.log.$$ 2>&1 << 'ENDSSH1'
