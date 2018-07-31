@@ -81,7 +81,8 @@
   "variables": {
       "dnsName": "[concat('slurm-', uniqueString(resourceGroup().id))]",
       "imagePublisher": "OpenLogic",
-      "imageOffer": "CentOS-HPC",
+      "headImageOffer": "CentOS",
+      "workerImageOffer": "CentOS-HPC",
       "centOSVersion": "7.4",
       "publicIPAddressName": "publicip",
       "vmNameMaster": "master",
@@ -190,7 +191,7 @@
               "storageProfile": {
                   "imageReference": {
                       "publisher": "[variables('imagePublisher')]",
-                      "offer": "[variables('imageOffer')]",
+                      "offer": "[variables('headImageOffer')]",
                       "sku": "[variables('centOSVersion')]",
                       "version": "latest"
                   },
@@ -288,7 +289,7 @@
               "storageProfile": {
                   "imageReference": {
                       "publisher": "[variables('imagePublisher')]",
-                      "offer": "[variables('imageOffer')]",
+                      "offer": "[variables('workerImageOffer')]",
                       "sku": "[variables('centOSVersion')]",
                       "version": "latest"
                   },
