@@ -29,6 +29,9 @@ ADMIN_USERNAME=$7
 ADMIN_PASSWORD=$8
 TEMPLATE_BASE=$9
 
+# Update sudo rule for azureuser
+sudo sed -i -- 's/azureuser ALL=(ALL) ALL/azureuser ALL=(ALL) NOPASSWD:ALL/g' /etc/sudoers.d/waagent >> /tmp/azuredeploy.log.$$ 2>&1
+
 # Update master node
 echo $MASTER_IP $MASTER_NAME >> /etc/hosts
 echo $MASTER_IP $MASTER_NAME > /tmp/hosts.$$
