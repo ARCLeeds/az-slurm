@@ -109,7 +109,7 @@ sudo systemctl enable slurmctld >> /tmp/azuredeploy.log.$$ 2>&1
 sudo systemctl start  slurmctld >> /tmp/azuredeploy.log.$$ 2>&1 # Start the master daemon service
 
 # Download worker_config.sh and add admin password for sudo
-WORKERCONFIG=worker_config.sh.$$
+WORKERCONFIG=/tmp/worker_config.sh.$$
 wget $TEMPLATE_BASE/worker_config.sh -O $WORKERCONFIG >> /tmp/azuredeploy.log.$$ 2>&1
 sed -i -- 's/__ADMINPASS__/'"$ADMIN_PASSWORD"'/g' $WORKERCONFIG >> /tmp/azuredeploy.log.$$ 2>&1
 
