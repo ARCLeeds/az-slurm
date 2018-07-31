@@ -70,10 +70,11 @@ sudo yum -y install rpm-build
 ###################################
 
 wget https://download.schedmd.com/slurm/slurm-17.11.8.tar.bz2 >> /tmp/azuredeploy.log.$$ 2>&1
-sudo yum install -y hwloc-devel hwloc-libs hdf5-devel munge-devel munge-libs numactl-devel numactl-libs readline-devel openssl-devel pam-devel perl-ExtUtils-MakeMaker mariadb-devel >> /tmp/azuredeploy.log.$$ 2>&1
+sudo yum install -y hwloc-devel hwloc-libs hdf5-devel munge munge-devel munge-libs numactl-devel numactl-libs readline-devel openssl-devel pam-devel perl-ExtUtils-MakeMaker mariadb-devel >> /tmp/azuredeploy.log.$$ 2>&1
 rpmbuild -ta slurm-17.11.8.tar.bz2 >> /tmp/azuredeploy.log.$$ 2>&1
 
 # Generate the munge key
+echo "Generating munge key" >> /tmp/azuredeploy.log.$$ 2>&1
 dd if=/dev/urandom bs=1 count=1024 >/tmp/munge.key
 sudo chown munge:munge /tmp/munge.key
 sudo chmod 600 /tmp/munge.key
@@ -107,6 +108,11 @@ sudo systemctl start munge >> /tmp/azuredeploy.log.$$ 2>&1 # Start munged
 sudo systemctl enable slurmctld >> /tmp/azuredeploy.log.$$ 2>&1
 sudo systemctl start  slurmctld >> /tmp/azuredeploy.log.$$ 2>&1 # Start the master daemon service
 
+# Download worker_config.sh and add admin password for sudo
+WORKERCONFIG=worker_config.sh.$$
+wget $TEMPLATE_BASE/worker_config.sh -O $WORKERCONFIG >> /tmp/azuredeploy.log.$$ 2>&1
+sed -i -- 's/__ADMINPASS__/'"$ADMIN_PASSWORD"'/g' $WORKERCONFIG >> /tmp/azuredeploy.log.$$ 2>&1
+
 # Install slurm on all nodes by running apt-get
 # Also push munge key and slurm.conf to them
 echo "Prepare the local copy of munge key" >> /tmp/azuredeploy.log.$$ 2>&1 
@@ -125,6 +131,7 @@ do
    echo "SCP to $worker"  >> /tmp/azuredeploy.log.$$ 2>&1 
    sudo -u $ADMIN_USERNAME scp $mungekey $ADMIN_USERNAME@$worker:/tmp/munge.key >> /tmp/azuredeploy.log.$$ 2>&1 
    sudo -u $ADMIN_USERNAME scp $SLURMCONF $ADMIN_USERNAME@$worker:/tmp/slurm.conf >> /tmp/azuredeploy.log.$$ 2>&1
+   sudo -u $ADMIN_USERNAME scp $WORKERCONFIG $ADMIN_USERNAME@$worker:/tmp/worker_config.sh >> /tmp/azuredeploy.log.$$ 2>&1
    sudo -u $ADMIN_USERNAME scp /tmp/hosts.$$ $ADMIN_USERNAME@$worker:/tmp/hosts >> /tmp/azuredeploy.log.$$ 2>&1
    sudo -u $ADMIN_USERNAME scp /rpmbuild/RPMS/x86_64/slurm-17.11.8-1.el7.centos.x86_64.rpm $ADMIN_USERNAME@$worker:/tmp/slurm-17.11.8-1.el7.centos.x86_64.rpm >> /tmp/azuredeploy.log.$$ 2>&1
    sudo -u $ADMIN_USERNAME scp /rpmbuild/RPMS/x86_64/slurm-contribs-17.11.8-1.el7.centos.x86_64.rpm $ADMIN_USERNAME@$worker:/tmp/slurm-contribs-17.11.8-1.el7.centos.x86_64.rpm >> /tmp/azuredeploy.log.$$ 2>&1
@@ -134,26 +141,7 @@ do
    sudo -u $ADMIN_USERNAME scp /rpmbuild/RPMS/x86_64/slurm-slurmd-17.11.8-1.el7.centos.x86_64.rpm $ADMIN_USERNAME@$worker:/tmp/slurm-slurmd-17.11.8-1.el7.centos.x86_64.rpm >> /tmp/azuredeploy.log.$$ 2>&1
 
    echo "Remote execute on $worker" >> /tmp/azuredeploy.log.$$ 2>&1 
-   sudo -u $ADMIN_USERNAME ssh $ADMIN_USERNAME@$worker >> /tmp/azuredeploy.log.$$ 2>&1 << 'ENDSSH1'
-      echo $ADMIN_PASSWORD | sudo -S hostname
-      sudo sh -c "cat /tmp/hosts >> /etc/hosts"
-      sudo chmod g-w /var/log
-      sudo useradd -c "Slurm scheduler" slurm
-      sudo yum -y install munge
-      sudo yum -y install /tmp/slurm-17.11.8-1.el7.centos.x86_64.rpm /tmp/slurm-contribs-17.11.8-1.el7.centos.x86_64.rpm /tmp/slurm-example-configs-17.11.8-1.el7.centos.x86_64.rpm /tmp/slurm-libpmi-17.11.8-1.el7.centos.x86_64.rpm /tmp/slurm-pam_slurm-17.11.8-1.el7.centos.x86_64.rpm /tmp/slurm-slurmd-17.11.8-1.el7.centos.x86_64.rpm
-      sudo cp -f /tmp/munge.key /etc/munge/munge.key
-      sudo chown munge /etc/munge/munge.key
-      sudo chgrp munge /etc/munge/munge.key
-      sudo rm -f /tmp/munge.key
-      sudo systemctl daemon-reload
-      sudo systemctl enable munge
-      sudo systemctl start munge
-      sudo cp -f /tmp/slurm.conf /etc/slurm/slurm.conf
-      sudo chown slurm /etc/slurm/slurm.conf
-      sudo systemctl enable slurmd
-      sudo systemctl start  slurmd
-      sudo yum -y install openmpi
-ENDSSH1
+   sudo -u $ADMIN_USERNAME ssh $ADMIN_USERNAME@$worker 'sh /tmp/worker_config.sh' >> /tmp/azuredeploy.log.$$ 2>&1
 
    i=`expr $i + 1`
 done
