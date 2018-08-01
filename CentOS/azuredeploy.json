@@ -35,10 +35,26 @@
           "defaultValue": "Standard_H16r",
           "allowedValues": [
               "Standard_H16r",
-              "Standard_H16mr"
+              "Standard_H16mr",
+              "Standard_H8",
+              "Standard_H16",
+              "Standard_H8m",
+              "Standard_H16m",
+              "Standard_D2_v2"
           ],
           "metadata": {
               "description": "Size of the worker nodes."
+          }
+      },
+      "workerImageOffer": {
+          "type": "string",
+          "defaultValue": "CentOS-HPC",
+          "allowedValues": [
+              "CentOS-HPC",
+              "CentOS"
+          ],
+          "metadata": {
+              "description": "Operating System. Choose CentOS-HPC if using Standard_H16r or Standard_H16mr otherwise use CentOS"
           }
       },
       "scaleNumber": {
@@ -74,7 +90,6 @@
       "dnsName": "[concat('slurm-', uniqueString(resourceGroup().id))]",
       "imagePublisher": "OpenLogic",
       "headImageOffer": "CentOS",
-      "workerImageOffer": "CentOS-HPC",
       "centOSVersion": "7.4",
       "publicIPAddressName": "publicip",
       "vmNameMaster": "master",
@@ -281,7 +296,7 @@
               "storageProfile": {
                   "imageReference": {
                       "publisher": "[variables('imagePublisher')]",
-                      "offer": "[variables('workerImageOffer')]",
+                      "offer": "[parameters('workerImageOffer')]",
                       "sku": "[variables('centOSVersion')]",
                       "version": "latest"
                   },

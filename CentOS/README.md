@@ -1,8 +1,9 @@
 # Deploy a CentOS based Slurm cluster
 
-This template deploys a Slurm cluster using CentOS 7.4
+This template deploys a Slurm cluster using CentOS 7.4 or CentOS-HPC (RDMA for Infiband network in image). 
 
-The compute node choices are H16r or H16mr both with 16 CPUs
+The default compute node choice is H16r which requires CentOS-HPC as the OS choice. Use this if using H16r or H16mr,
+otherwise choose CentOS as the OS choice.
 
 <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fgitlab.oit.duke.edu%2FOIT-DCC%2FAzure-Slurm%2Fraw%2Fmaster%2FCentOS%2Fazuredeploy.json" target="_blank">
    <img alt="Deploy to Azure" src="http://azuredeploy.net/deploybutton.png"/>
