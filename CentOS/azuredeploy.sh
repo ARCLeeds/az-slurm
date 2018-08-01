@@ -51,6 +51,10 @@ sudo yum -y install epel-release
 # Install sshpass to automate ssh-copy-id action
 sudo yum install -y sshpass >> /tmp/azuredeploy.log.$$ 2>&1
 
+# Install ansible and start the ansible.cfg
+sudo yum -y install ansible >> /tmp/azuredeploy.log.$$ 2>&1
+sudo echo "[workers]" > /etc/ansible/hosts
+
 # Loop through all worker nodes, update hosts file and copy ssh public key to it
 # The script make the assumption that the node is called %WORKER+<index> and have
 # static IP in sequence order
@@ -62,6 +66,7 @@ do
    echo $WORKER_IP_BASE$workerip $WORKER_NAME$i >> /etc/hosts
    echo $WORKER_IP_BASE$workerip $WORKER_NAME$i >> /tmp/hosts.$$
    sudo -u $ADMIN_USERNAME sh -c "sshpass -p '$ADMIN_PASSWORD' ssh-copy-id $WORKER_NAME$i"
+   sudo echo $WORKER_NAME$i >> /etc/ansible/hosts
    i=`expr $i + 1`
 done
 
