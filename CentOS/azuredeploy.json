@@ -218,15 +218,17 @@
                       }
                   },
                   "copy": [
-                      "name": "dataDisks",
-                      "count": "[parameters('numDtaDisks')]",
-                      "input": {
-                          "name": "[concat(variables('datadisk-',copyIndex('dataDisks'))]",
-                          "caching": "ReadWrite",
-                          "diskSizeGB": 100,
-                          "createOption": "Empty",
-                          "managedDisk": {
-                              "storageAccountType": "Standard_LRS"
+                      {
+                          "name": "dataDisks",
+                          "count": "[parameters('numDtaDisks')]",
+                          "input": {
+                              "name": "[concat(variables('datadisk-',copyIndex('dataDisks'))]",
+                              "caching": "ReadWrite",
+                              "diskSizeGB": 100,
+                              "createOption": "Empty",
+                              "managedDisk": {
+                                  "storageAccountType": "Standard_LRS"
+                              }
                           }
                       }
                   ]
