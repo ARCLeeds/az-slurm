@@ -220,7 +220,7 @@
                   "copy": [
                       {
                           "name": "dataDisks",
-                          "count": "[parameters('numDtaDisks')]",
+                          "count": "[parameters('numDataDisks')]",
                           "input": {
                               "name": "[concat(variables('datadisk-',copyIndex('dataDisks'))]",
                               "caching": "ReadWrite",
