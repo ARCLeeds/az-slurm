@@ -67,6 +67,8 @@
       "numDataDisks": {
           "type": "int",
           "defaultValue": 2,
+          "minValue": 1,
+          "maxValue": 63,
           "metadata": {
               "description": "Number of 100 GB luns to assign as data disks to combine in NFS export"
           }
@@ -224,7 +226,8 @@
                           "input": {
                               "name": "[concat('datadisk-',copyIndex('dataDisks'))]",
                               "caching": "ReadWrite",
-                              "diskSizeGB": 100,
+                              "lun": "[copyIndex('dataDisks')]",
+                              "diskSizeGB": "100",
                               "createOption": "Empty",
                               "managedDisk": {
                                   "storageAccountType": "Standard_LRS"
