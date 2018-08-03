@@ -67,7 +67,7 @@ sudo systemctl start rpc-statd
 sudo systemctl start nfs-idmapd
 
 # Configure data disks and export via an NFS share
-DATADISKS="$(lsblk -dlnpo name | grep -v -E 'sda|fd0|sr0')"
+DATADISKS="$(lsblk -dlnpo name | grep -v -E 'sda|sdb|fd0|sr0')"
 
 sudo pvcreate $DATADISKS >> /tmp/azuredeploy.log.$$ 2>&1
 sudo vgcreate vg_data $DATADISKS >> /tmp/azuredeploy.log.$$ 2>&1
