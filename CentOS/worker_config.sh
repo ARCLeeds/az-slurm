@@ -22,5 +22,5 @@ sudo yum -y install nfs-utils
 sudo systemctl enable rpcbind
 sudo systemctl start rpcbind
 sudo mkdir /data
-sudo echo -e "master:/data\t/data\tnfs\tintr\t0 0" >> /etc/fstab
+sudo bash -c 'echo -e "master:/data\t/data\tnfs\tintr\t0 0" >> /etc/fstab'
 sudo mount /data
