@@ -2,7 +2,7 @@
 # Put this file on all nodes of your cluster.
 # See the slurm.conf man page for more information.
 #
-ControlMachine=__MASTERNODE__ 
+ControlMachine={{ master }}
 #ControlAddr=
 #
 #MailProg=/bin/mail
@@ -48,5 +48,7 @@ JobAcctGatherType=jobacct_gather/none
 #
 #
 # COMPUTE NODES
-NodeName=__WORKERNODES__ CPUs=1 State=UNKNOWN
-PartitionName=debug Nodes=__WORKERNODES__ Default=YES MaxTime=INFINITE State=UP
+{% for node in play_hosts %}
+NodeName={{ node }} CPUs={{ hostvars[node]['ansible_processor_count'] }} State=UNKNOWN
+{% endfor %}
+PartitionName=debug Nodes={{ ansible_play_hosts | join(',') }} Default=YES MaxTime=INFINITE State=UP

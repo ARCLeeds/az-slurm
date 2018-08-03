@@ -36,7 +36,7 @@ sudo sed -i -- 's/azureuser ALL=(ALL) ALL/azureuser ALL=(ALL) NOPASSWD:ALL/g' /e
 echo $MASTER_IP $MASTER_NAME >> /etc/hosts
 echo $MASTER_IP $MASTER_NAME > /tmp/hosts.$$
 
-# Update ssh config file to ignore unknow host
+# Update ssh config file to ignore unknown host
 # Note all settings are for azureuser, NOT root
 sudo -u $ADMIN_USERNAME sh -c "mkdir /home/$ADMIN_USERNAME/.ssh/;echo Host worker\* > /home/$ADMIN_USERNAME/.ssh/config; echo StrictHostKeyChecking no >> /home/$ADMIN_USERNAME/.ssh/config; echo UserKnownHostsFile=/dev/null >> /home/$ADMIN_USERNAME/.ssh/config"
 
@@ -51,9 +51,36 @@ sudo yum -y install epel-release
 # Install sshpass to automate ssh-copy-id action
 sudo yum install -y sshpass >> /tmp/azuredeploy.log.$$ 2>&1
 
-# Install ansible and start the ansible.cfg
+# Install ansible and start the ansible hosts file
 sudo yum -y install ansible >> /tmp/azuredeploy.log.$$ 2>&1
-sudo echo "[workers]" > /etc/ansible/hosts
+sudo echo "[master]" > /etc/ansible/hosts
+sudo echo $MASTER_NAME >> /etc/ansible/hosts
+sudo echo "[workers]" >> /etc/ansible/hosts
+
+# Install software needed for NFS server
+sudo yum -y install nfs-utils libnfsidmap >> /tmp/azuredeploy.log.$$ 2>&1
+sudo systemctl enable rpcbind
+sudo systemctl enable nfs-server
+sudo systemctl start rpcbind
+sudo systemctl start nfs-server
+sudo systemctl start rpc-statd
+sudo systemctl start nfs-idmapd
+
+# Configure data disks and export via an NFS share
+DATADISKS="$(lsblk -dlnpo name | grep -v -E 'sda|fd0|sr0')"
+
+sudo pvcreate $DATADISKS >> /tmp/azuredeploy.log.$$ 2>&1
+sudo vgcreate vg_data $DATADISKS >> /tmp/azuredeploy.log.$$ 2>&1
+sudo lvcreate -n lv_data -l 100%FREE vg_data >> /tmp/azuredeploy.log.$$ 2>&1
+sudo mkfs.xfs /dev/vg_data/lv_data >> /tmp/azuredeploy.log.$$ 2>&1
+sudo mkdir /data
+sudo echo -e "/dev/mapper/vg_data-lv_data\t/data\txfs\tdefaults\t0 0" >> /etc/fstab
+sudo mount /data
+sudo chmod 777 /data
+
+sudo echo "/data *(rw,sync,no_root_squash)" > /etc/exports
+sudo exportfs -a
+
 
 # Loop through all worker nodes, update hosts file and copy ssh public key to it
 # The script make the assumption that the node is called %WORKER+<index> and have
@@ -115,6 +142,17 @@ sudo systemctl enable munge >> /tmp/azuredeploy.log.$$ 2>&1
 sudo systemctl start munge >> /tmp/azuredeploy.log.$$ 2>&1 # Start munged
 sudo systemctl enable slurmctld >> /tmp/azuredeploy.log.$$ 2>&1
 sudo systemctl start  slurmctld >> /tmp/azuredeploy.log.$$ 2>&1 # Start the master daemon service
+
+# Set up the Ansible playbook that can build the /etc/slurm/slurm.conf file
+PLAYBOOK=/tmp/create_slurm_conf.yml.$$
+wget $TEMPLATE_BASE/create_slurm_conf.yml -O $PLAYBOOK >> /tmp/azuredeploy.log.$$ 2>&1
+sed -i -- 's/__MASTERNODE__/'"$MASTER_NAME"'/g' $PLAYBOOK >> /tmp/azuredeploy.log.$$ 2>&1
+cp -f $PLAYBOOK /home/$ADMIN_USERNAME/create_slurm_conf.yml
+sudo chown $ADMIN_USERNAME /home/$ADMIN_USERNAME/create_slurm_conf.yml
+SLURMJ2=/tmp/slurm_conf.j2.$$
+wget $TEMPLATE_BASE/slurm_conf.j2 -O $SLURMJ2 >> /tmp/azuredeploy.log.$$ 2>&1
+cp -f $SLURMJ2 /home/$ADMIN_USERNAME/slurm_conf.j2
+sudo chown $ADMIN_USERNAME /home/slurm_conf.j2
 
 # Download worker_config.sh and add admin password for sudo
 WORKERCONFIG=/tmp/worker_config.sh.$$
