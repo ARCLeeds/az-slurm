@@ -6,6 +6,7 @@
     master: __MASTERNODE__
   tasks:
     - template: src=slurm_conf.j2 dest=/etc/slurm/slurm.conf
+      become: yes
 
 - hosts: workers
   gather_facts: true
@@ -14,3 +15,4 @@
   tasks:
     - template: src=slurm_conf.j2 dest=/etc/slurm/slurm.conf
       delegate_to: localhost
+      become: yes

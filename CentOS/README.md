@@ -5,6 +5,8 @@ This template deploys a Slurm cluster using CentOS 7.4 or CentOS-HPC (RDMA for I
 The default compute node choice is H16r which requires CentOS-HPC as the OS choice. Use this if using H16r or H16mr,
 otherwise choose CentOS as the OS choice.
 
+The template also sets up an NFS share on the master node at /data and it shared and mounted on the compute nodes at the same location.
+
 <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fgitlab.oit.duke.edu%2FOIT-DCC%2FAzure-Slurm%2Fraw%2Fmaster%2FCentOS%2Fazuredeploy.json" target="_blank">
    <img alt="Deploy to Azure" src="http://azuredeploy.net/deploybutton.png"/>
 </a>
