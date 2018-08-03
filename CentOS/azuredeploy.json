@@ -222,7 +222,7 @@
                           "name": "dataDisks",
                           "count": "[parameters('numDataDisks')]",
                           "input": {
-                              "name": "[concat(variables('datadisk-',copyIndex('dataDisks')))]",
+                              "name": "[concat('datadisk-',copyIndex('dataDisks'))]",
                               "caching": "ReadWrite",
                               "diskSizeGB": 100,
                               "createOption": "Empty",
