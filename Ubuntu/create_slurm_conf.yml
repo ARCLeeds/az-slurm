@@ -5,7 +5,7 @@
   vars:
     master: __MASTERNODE__
   tasks:
-    - template: src=slurm_conf.j2 dest=/etc/slurm/slurm.conf
+    - template: src=slurm_conf.j2 dest=/etc/slurm-llnl/slurm.conf
       delegate_to: localhost
       become: yes
     - systemd:
@@ -17,7 +17,7 @@
   vars:
     master: __MASTERNODE__
   tasks:
-    - template: src=slurm_conf.j2 dest=/etc/slurm/slurm.conf
+    - template: src=slurm_conf.j2 dest=/etc/slurm-llnl/slurm.conf
       become: yes
     - systemd:
       name: slurmd
