@@ -64,7 +64,8 @@ do
 done
 
 # Install Ansible
-sudo apt-get install ansible -y >> /tmp/azuredeploy.log.$$ 2>&1
+sudo apt-get install python-pip -y >> /tmp/azuredeploy.log.$$ 2>&1
+sudo pip install ansible >> /tmp/azuredeploy.log.$$ 2>&1
 sudo echo "[master]" > /etc/ansible/hosts
 sudo echo $MASTER_NAME >> /etc/ansible/hosts
 sudo echo "[workers]" >> /etc/ansible/hosts
