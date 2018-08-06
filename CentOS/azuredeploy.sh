@@ -159,7 +159,7 @@ WORKERCONFIG=/tmp/worker_config.sh.$$
 wget $TEMPLATE_BASE/worker_config.sh -O $WORKERCONFIG >> /tmp/azuredeploy.log.$$ 2>&1
 sed -i -- 's/__ADMINPASS__/'"$ADMIN_PASSWORD"'/g' $WORKERCONFIG >> /tmp/azuredeploy.log.$$ 2>&1
 
-# Install slurm on all nodes by running apt-get
+# Install slurm on all nodes
 # Also push munge key and slurm.conf to them
 echo "Prepare the local copy of munge key" >> /tmp/azuredeploy.log.$$ 2>&1 
 
