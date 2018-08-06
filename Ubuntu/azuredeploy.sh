@@ -70,9 +70,10 @@ sudo echo $MASTER_NAME >> /etc/ansible/hosts
 sudo echo "[workers]" >> /etc/ansible/hosts
 
 # Install software need for NFS server
-sudo apt-get install rpcbind nfs-kernel-server
-sudo service restart rpcbind
-sudo service restart nfs-kernel-server
+sudo apt-get install rpcbind -y >> /tmp/azuredeploy.log.$$ 2>&1
+sudo apt-get install nfs-kernel-server -y >> /tmp/azuredeploy.log.$$ 2>&1
+sudo systemctl restart rpcbind >> /tmp/azuredeploy.log.$$ 2>&1
+sudo systemctl restart nfs-kernel-server >> /tmp/azuredeploy.log.$$ 2>&1
 
 # Configure data disks and export via an NFS share
 DATADISKS="$(lsblk -dlnpo name | grep -v -E 'sda|sdb|fd0|sr0')"
