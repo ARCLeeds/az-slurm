@@ -1,0 +1,24 @@
+---
+# Get CPU fact and create slurm.conf
+- hosts: workers
+  gather_facts: true
+  vars:
+    master: __MASTERNODE__
+  tasks:
+    - template: src=slurm_conf.j2 dest=/etc/slurm/slurm.conf
+      delegate_to: localhost
+      become: yes
+    - systemd:
+      name: slurmctld
+      state: restarted
+
+- hosts: workers
+  gather_facts: true
+  vars:
+    master: __MASTERNODE__
+  tasks:
+    - template: src=slurm_conf.j2 dest=/etc/slurm/slurm.conf
+      become: yes
+    - systemd:
+      name: slurmd
+      state: restarted

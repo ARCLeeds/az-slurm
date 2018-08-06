@@ -1,5 +1,6 @@
 # Deploy an Ubuntu based Slurm cluster
 
+This template uses Ubuntu 16.04-LTS. If you choose H16r or H16mr as your image you will have to install and configure the RDMA drivers. This template also comfigures data disks at /data and shares it out to the compute nodes over NFS where it is mounted in the same location.
 
 <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fgitlab.oit.duke.edu%2FOIT-DCC%2FAzure-Slurm%2Fraw%2Fmaster%2FUbuntu%2Fazuredeploy.json" target="_blank">
    <img alt="Deploy to Azure" src="http://azuredeploy.net/deploybutton.png"/>

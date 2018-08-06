@@ -30,6 +30,9 @@ ADMIN_USERNAME=$7
 ADMIN_PASSWORD=$8
 TEMPLATE_BASE=$9
 
+# Update sudo rule for azureuser
+sudo sed -i -- 's/azureuser ALL=(ALL) ALL/azureuser ALL=(ALL) NOPASSWD:ALL/g' /etc/sudoers.d/waagent >> /tmp/azuredeploy.log.$$ 2>&1
+
 # Update master node
 echo $MASTER_IP $MASTER_NAME >> /etc/hosts
 echo $MASTER_IP $MASTER_NAME > /tmp/hosts.$$
@@ -60,6 +63,32 @@ do
    i=`expr $i + 1`
 done
 
+# Install Ansible
+sudo apt-get install ansible -y >> /tmp/azuredeploy.log.$$ 2>&1
+sudo echo "[master]" > /etc/ansible/hosts
+sudo echo $MASTER_NAME >> /etc/ansible/hosts
+sudo echo "[workers]" >> /etc/ansible/hosts
+
+# Install software need for NFS server
+sudo apt-get install rpcbind nfs-kernel-server
+sudo service restart rpcbind
+sudo service restart nfs-kernel-server
+
+# Configure data disks and export via an NFS share
+DATADISKS="$(lsblk -dlnpo name | grep -v -E 'sda|sdb|fd0|sr0')"
+
+sudo pvcreate $DATADISKS >> /tmp/azuredeploy.log.$$ 2>&1
+sudo vgcreate vg_data $DATADISKS >> /tmp/azuredeploy.log.$$ 2>&1
+sudo lvcreate -n lv_data -l 100%FREE vg_data >> /tmp/azuredeploy.log.$$ 2>&1
+sudo mkfs.xfs /dev/vg_data/lv_data >> /tmp/azuredeploy.log.$$ 2>&1
+sudo mkdir /data
+sudo echo -e "/dev/mapper/vg_data-lv_data\t/data\txfs\tdefaults\t0 0" >> /etc/fstab
+sudo mount /data
+sudo chmod 777 /data
+
+sudo echo "/data *(rw,sync,no_root_squash)" > /etc/exports
+sudo exportfs -ra
+
 # Install SLURM on master node
 ###################################
 
@@ -81,6 +110,17 @@ sudo -u slurm /usr/sbin/slurmctld >> /tmp/azuredeploy.log.$$ 2>&1 # Start the ma
 sudo munged --force >> /tmp/azuredeploy.log.$$ 2>&1 # Start munged
 sudo slurmd >> /tmp/azuredeploy.log.$$ 2>&1 # Start the node
 
+# Set up the Ansible playbook that can build the /etc/slurm/slurm.conf file
+PLAYBOOK=/tmp/create_slurm_conf.yml.$$
+wget $TEMPLATE_BASE/create_slurm_conf.yml -O $PLAYBOOK >> /tmp/azuredeploy.log.$$ 2>&1
+sed -i -- 's/__MASTERNODE__/'"$MASTER_NAME"'/g' $PLAYBOOK >> /tmp/azuredeploy.log.$$ 2>&1
+cp -f $PLAYBOOK /home/$ADMIN_USERNAME/create_slurm_conf.yml
+sudo chown $ADMIN_USERNAME /home/$ADMIN_USERNAME/create_slurm_conf.yml
+SLURMJ2=/tmp/slurm_conf.j2.$$
+wget $TEMPLATE_BASE/slurm_conf.j2 -O $SLURMJ2 >> /tmp/azuredeploy.log.$$ 2>&1
+cp -f $SLURMJ2 /home/$ADMIN_USERNAME/slurm_conf.j2
+sudo chown $ADMIN_USERNAME /home/slurm_conf.j2
+
 # Install slurm on all nodes by running apt-get
 # Also push munge key and slurm.conf to them
 echo "Prepare the local copy of munge key" >> /tmp/azuredeploy.log.$$ 2>&1 
@@ -100,6 +140,7 @@ do
    sudo -u $ADMIN_USERNAME scp $mungekey $ADMIN_USERNAME@$worker:/tmp/munge.key >> /tmp/azuredeploy.log.$$ 2>&1 
    sudo -u $ADMIN_USERNAME scp $SLURMCONF $ADMIN_USERNAME@$worker:/tmp/slurm.conf >> /tmp/azuredeploy.log.$$ 2>&1
    sudo -u $ADMIN_USERNAME scp /tmp/hosts.$$ $ADMIN_USERNAME@$worker:/tmp/hosts >> /tmp/azuredeploy.log.$$ 2>&1
+   sudo echo $WORKER_NAME$i >> /etc/ansible/hosts
 
    echo "Remote execute on $worker" >> /tmp/azuredeploy.log.$$ 2>&1 
    sudo -u $ADMIN_USERNAME ssh $ADMIN_USERNAME@$worker >> /tmp/azuredeploy.log.$$ 2>&1 << 'ENDSSH1'
@@ -107,6 +148,11 @@ do
       sudo chmod g-w /var/log
       sudo apt-get update
       sudo apt-get install slurm-llnl -y
+      sudo apt-get install rpcbind -y
+      sudo apt-get install nfs-common -y
+      sudo mkdir /data
+      sudo bash -c 'echo -e "master:/data\t/data\tnfs\tintr\t0 0" >> /etc/fstab'
+      sudo mount /data
       sudo cp -f /tmp/munge.key /etc/munge/munge.key
       sudo chown munge /etc/munge/munge.key
       sudo chgrp munge /etc/munge/munge.key

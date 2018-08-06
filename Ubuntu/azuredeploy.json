@@ -56,6 +56,15 @@
               "description": "This template create N worker node. Use scaleNumber to specify that N."
           }
       },
+      "numDataDisks": {
+          "type": "int",
+          "defaultValue": 2,
+          "minValue": 1,
+          "maxValue": 63,
+          "metadata": {
+              "description": "Number of 100 GB luns to assign as data disks to combine in NFS export"
+          }
+      },
       "_artifactsLocation": {
           "type": "string",
           "metadata": {
@@ -201,7 +210,23 @@
                       "managedDisk": {
                           "storageAccountType": "Standard_LRS"
                       }
-                  }
+                  },
+                  "copy": [
+                      {
+                          "name": "dataDisks",
+                          "count": "[parameters('numDataDisks')]",
+                          "input": {
+                              "name": "[concat('datadisk-',copyIndex('dataDisks'))]",
+                              "caching": "ReadWrite",
+                              "lun": "[copyIndex('dataDisks')]",
+                              "diskSizeGB": "100",
+                              "createOption": "Empty",
+                              "managedDisk": {
+                                  "storageAccountType": "Standard_LRS"
+                              }
+                          }
+                      }
+                  ]
               },
               "networkProfile": {
                   "networkInterfaces": [
