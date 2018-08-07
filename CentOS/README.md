@@ -7,6 +7,10 @@ otherwise choose CentOS as the OS choice.
 
 The template also sets up an NFS share on the master node at /data and it shared and mounted on the compute nodes at the same location.
 
+After your cluster has been provisioned in Azure, you will find an Ansible playbook in the azureuser's home directory that when run will update the slurm.conf file on the master and worker nodes with the correct vCPU count of the compute nodes.
+
+"ansible-playbook create_slurm_conf.yml"
+
 <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fgitlab.oit.duke.edu%2FOIT-DCC%2FAzure-Slurm%2Fraw%2Fmaster%2FCentOS%2Fazuredeploy.json" target="_blank">
    <img alt="Deploy to Azure" src="http://azuredeploy.net/deploybutton.png"/>
 </a>
