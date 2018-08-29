@@ -159,6 +159,16 @@ WORKERCONFIG=/tmp/worker_config.sh.$$
 wget $TEMPLATE_BASE/worker_config.sh -O $WORKERCONFIG >> /tmp/azuredeploy.log.$$ 2>&1
 sed -i -- 's/__ADMINPASS__/'"$ADMIN_PASSWORD"'/g' $WORKERCONFIG >> /tmp/azuredeploy.log.$$ 2>&1
 
+# Download the scripts to create users
+READCSV=/tmp/user_read_csv_create_yml.py.$$
+wget $TEMPLATE_BASE/user_read_csv_create_yml.py -O $READCSV >> /tmp/azuredeploy.log.$$ 2>&1
+cp -f $READCSV /home/$ADMIN_USERNAME/user_read_csv_create_yml.py
+sudo chown $ADMIN_USERNAME /home/$ADMIN_USERNAME/user_read_csv_create_yml.py
+CREATEUSERS=/tmp/create_users.yml.$$
+wget $TEMPLATE_BASE/create_users.yml -O $CREATEUSERS >> /tmp/azuredeploy.log.$$ 2>&1
+cp -f $CREATEUSERS /home/$ADMIN_USERNAME/create_users.yml
+sudo chown $ADMIN_USERNAME /home/$ADMIN_USERNAME/create_users.yml
+
 # Install slurm on all nodes
 # Also push munge key and slurm.conf to them
 echo "Prepare the local copy of munge key" >> /tmp/azuredeploy.log.$$ 2>&1 

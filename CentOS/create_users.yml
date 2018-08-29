@@ -1,0 +1,27 @@
+---
+- hosts: workers
+  gather_facts: true
+  vars:
+    master: master
+
+  tasks:
+  - include_vars: users.yml
+
+  - name: Add users | create users, shell, home dirs
+    user: name={{ item.netid }} uid={{ item.uid }} password={{ item.pass_hash }} update_password=on_create shell=/bin/bash createhome=yes comment={{ item.comment }} 
+    delegate_to: localhost
+    become: yes
+    with_items: '{{users}}'
+
+- hosts: workers
+  gather_facts: true
+  vars:
+    master: master
+
+  tasks:
+  - include_vars: users.yml
+
+  - name: Add users | create users, shell, home dirs
+    user: name={{ item.netid }} uid={{ item.uid }} password={{ item.pass_hash }} update_password=on_create shell=/bin/bash createhome=yes comment={{ item.comment }} 
+    become: yes
+    with_items: '{{users}}'
