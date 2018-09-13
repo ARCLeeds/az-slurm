@@ -35,6 +35,8 @@ sudo sed -i -- 's/azureuser ALL=(ALL) ALL/azureuser ALL=(ALL) NOPASSWD:ALL/g' /e
 # Update master node
 echo $MASTER_IP $MASTER_NAME >> /etc/hosts
 echo $MASTER_IP $MASTER_NAME > /tmp/hosts.$$
+echo "* soft memlock unlimited" >> /etc/security/limits.conf
+echo "* hard memlock unlimited" >> /etc/security/limits.conf
 
 # Update ssh config file to ignore unknown host
 # Note all settings are for azureuser, NOT root
