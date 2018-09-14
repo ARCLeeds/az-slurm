@@ -1,0 +1,6 @@
+Host *
+	GSSAPIAuthentication yes
+	HostbasedAuthentication yes
+	EnableSSHKeysign yes
+	ForwardX11 yes
+	ForwardX11Trusted yes

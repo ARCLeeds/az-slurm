@@ -171,6 +171,18 @@ wget $TEMPLATE_BASE/create_users.yml -O $CREATEUSERS >> /tmp/azuredeploy.log.$$ 
 cp -f $CREATEUSERS /home/$ADMIN_USERNAME/create_users.yml
 sudo chown $ADMIN_USERNAME /home/$ADMIN_USERNAME/create_users.yml
 
+# Download the SSH configuration files
+SSHDCONFIG=/tmp/sshd_config.$$
+wget $TEMPLATE_BASE/sshd_config -O $SSHDCONFIG >> /tmp/azuredeploy.log.$$ 2>&1
+SSHCONFIG=/tmp/ssh_config.$$
+wget $TEMPLATE_BASE/ssh_config -O $SSHCONFIG >> /tmp/azuredeploy.log.$$ 2>&1
+
+# Start building needed SSH files used for host authentication
+ssh_known_hosts=/tmp/ssh_known_hosts.$$
+/usr/bin/ssh-keyscan master > $ssh_known_hosts
+shosts_equiv=/tmp/shosts.equiv.$$
+echo 'master' > $shosts_equiv
+
 # Install slurm on all nodes
 # Also push munge key and slurm.conf to them
 echo "Prepare the local copy of munge key" >> /tmp/azuredeploy.log.$$ 2>&1 
@@ -201,10 +213,22 @@ do
    echo "Remote execute on $worker" >> /tmp/azuredeploy.log.$$ 2>&1 
    sudo -u $ADMIN_USERNAME ssh $ADMIN_USERNAME@$worker 'sh /tmp/worker_config.sh' >> /tmp/azuredeploy.log.$$ 2>&1
 
+   # While we're looping through all the workers grab the ssh host keys for each to deploy ssh_known_hosts afterwards
+   /usr/bin/ssh-keyscan $worker >> $ssh_known_hosts
+   echo $worker >> $shosts_equiv
+
    i=`expr $i + 1`
 done
 rm -f $mungekey
 
-# Restart slurm service on all nodes
+# Update slurm.conf with the number of CPUs detected on the compute nodes
+/usr/bin/ansible-playbook create_slurm_conf.yml
+sudo systemctl restart slurmctld
+sudo scontrol reconfigure
+
+# Configure ssh for host based authentication
+sudo cp $ssh_known_hosts /etc/ssh/ssh_known_hosts
+sudo cp $shosts_equiv /etc/ssh/shosts.equiv
+
 
 exit 0
