@@ -192,7 +192,7 @@ sudo cp -f /etc/munge/munge.key $mungekey
 sudo chown $ADMIN_USERNAME $mungekey
 
 echo "Start looping all workers" >> /tmp/azuredeploy.log.$$ 2>&1 
-
+shosts.equiv
 i=0
 while [ $i -lt $NUM_OF_VM ]
 do
@@ -227,8 +227,30 @@ sudo systemctl restart slurmctld
 sudo scontrol reconfigure
 
 # Configure ssh for host based authentication
+i=0
+while [ $i -lt $NUM_OF_VM ]
+do
+   worker=$WORKER_NAME$i
+
+   echo "SCP to $worker"  >> /tmp/azuredeploy.log.$$ 2>&1 
+   sudo -u $ADMIN_USERNAME scp $ssh_known_hosts $ADMIN_USERNAME@$worker:/tmp/ssh_known_hosts >> /tmp/azuredeploy.log.$$ 2>&1 
+   sudo -u $ADMIN_USERNAME scp $shosts_equiv $ADMIN_USERNAME@$worker:/tmp/shosts.equiv >> /tmp/azuredeploy.log.$$ 2>&1 
+   sudo -u $ADMIN_USERNAME scp $SSHDCONFIG $ADMIN_USERNAME@$worker:/tmp/sshd_config >> /tmp/azuredeploy.log.$$ 2>&1 
+   sudo -u $ADMIN_USERNAME scp $SSHCONFIG $ADMIN_USERNAME@$worker:/tmp/ssh_config >> /tmp/azuredeploy.log.$$ 2>&1 
+
+   sudo -u $ADMIN_USERNAME ssh $ADMIN_USERNAME@$worker 'sudo cp /tmp/ssh_known_hosts /etc/ssh/ssh_known_hosts' >> /tmp/azuredeploy.log.$$ 2>&1
+   sudo -u $ADMIN_USERNAME ssh $ADMIN_USERNAME@$worker 'sudo cp /tmp/shosts.equiv /etc/ssh/shosts.equiv' >> /tmp/azuredeploy.log.$$ 2>&1
+   sudo -u $ADMIN_USERNAME ssh $ADMIN_USERNAME@$worker 'sudo cp /tmp/sshd_config /etc/ssh/sshd_config' >> /tmp/azuredeploy.log.$$ 2>&1
+   sudo -u $ADMIN_USERNAME ssh $ADMIN_USERNAME@$worker 'sudo cp /tmp/ssh_config /etc/ssh/ssh_config' >> /tmp/azuredeploy.log.$$ 2>&1
+   sudo -u $ADMIN_USERNAME ssh $ADMIN_USERNAME@$worker 'sudo systemctl restart sshd' >> /tmp/azuredeploy.log.$$ 2>&1
+
+   i=`expr $i + 1`
+done
+
 sudo cp $ssh_known_hosts /etc/ssh/ssh_known_hosts
 sudo cp $shosts_equiv /etc/ssh/shosts.equiv
-
+sudo cp $SSHDCONFIG /etc/ssh/sshd_config
+sudo cp $SSHCONFIG /etc/ssh/ssh_config
+sudo systemctl restart sshd
 
 exit 0
