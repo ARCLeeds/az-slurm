@@ -27,7 +27,8 @@
               "Standard_H8m",
               "Standard_H16m",
               "Standard_H16r",
-              "Standard_H16mr"
+              "Standard_H16mr",
+              "Standard_HB60rs"
           ],
           "metadata": {
               "description": "Size of the head node."
