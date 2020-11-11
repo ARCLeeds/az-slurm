@@ -87,7 +87,7 @@ sudo restorecon /home
 sudo echo "/data *(rw,sync,no_root_squash)" > /etc/exports
 sudo exportfs -a
 
-sudo -u $ADMIN_USERNAME sh -c "sshpass -p '$ADMIN_PASSWORD' ssh-copy-id localhost"
+sudo -u $ADMIN_USERNAME sh -c "sshpass -p '$ADMIN_PASSWORD' ssh-copy-id master"
 # Loop through all worker nodes, update hosts file and copy ssh public key to it
 # The script make the assumption that the node is called %WORKER+<index> and have
 # static IP in sequence order
@@ -98,6 +98,7 @@ do
    echo 'I update host - '$WORKER_NAME$i >> /tmp/azuredeploy.log.$$ 2>&1
    echo $WORKER_IP_BASE$workerip $WORKER_NAME$i >> /etc/hosts
    echo $WORKER_IP_BASE$workerip $WORKER_NAME$i >> /tmp/hosts.$$
+   sudo -u $ADMIN_USERNAME sh -c "sshpass -p '$ADMIN_PASSWORD' ssh-copy-id $WORKER_NAME$i"
    sudo echo $WORKER_NAME$i >> /etc/ansible/hosts
    i=`expr $i + 1`
 done
