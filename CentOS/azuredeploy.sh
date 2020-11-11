@@ -261,5 +261,6 @@ cp $SSHCONFIG /etc/ssh/ssh_config
 systemctl restart sshd
 
 yum -y install openmpi3-devel
+yum -y reinstall aadlogin-selinux
 
 exit 0
