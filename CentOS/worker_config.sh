@@ -27,4 +27,4 @@ sudo mount /data
 sudo bash -c 'echo -e "/data/home /home none bind 0 0" >> /etc/fstab'
 sudo mount -a
 sudo yum -y install openmpi3-devel
-sudo setsebool use_nfs_home_dir=on
+sudo setsebool use_nfs_home_dirs=on

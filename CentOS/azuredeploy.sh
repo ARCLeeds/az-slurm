@@ -82,7 +82,8 @@ sudo mkdir /data
 sudo echo -e "/dev/mapper/vg_data-lv_data\t/data\txfs\tdefaults\t0 0" >> /etc/fstab
 sudo mount /data
 sudo chmod 777 /data
-sudo mv /home /data/home
+mkdir /data/home
+sudo mv /home/* /data/home/
 sudo echo -e "/data/home\t/home\tnone\tbind\t0 0" >> /etc/fstab
 sudo mount /home
 sudo restorecon /home
