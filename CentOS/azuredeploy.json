@@ -267,6 +267,21 @@
           },
           "resources": [
               {
+                  "name": "[concat(variables('vmNameMaster'),'/', 'AADLoginForLinux')]",
+		  "type": "Microsoft.Compute/virtualMachines/extensions",
+		  "apiVersion": "2017-12-01",
+		  "location": "[parameters('location')]",
+		  "properties": {
+			  "publisher": "Microsoft.Azure.ActiveDirectory.LinuxSSH",
+			  "type": "AADLoginForLinux",
+			  "typeHandlerVersion": "1.0",
+			  "autoUpgradeMinorVersion": true
+		  },
+		  "dependsOn": [
+			  "[concat('Microsoft.Compute/virtualMachines/',variables('vmNameMaster'))]"
+		  ]
+	      },
+              {
                   "apiVersion": "2016-03-30",
                   "type": "extensions",
                   "name": "Installation",
