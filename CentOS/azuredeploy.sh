@@ -79,10 +79,13 @@ sudo mkdir /data
 sudo echo -e "/dev/mapper/vg_data-lv_data\t/data\txfs\tdefaults\t0 0" >> /etc/fstab
 sudo mount /data
 sudo chmod 777 /data
+sudo mv /home /data/home
+sudo echo -e "/data/home\t/home\tnone\tbind\t0 0" >> /etc/fstab
+sudo mount /home
+sudo restorecon /home
 
 sudo echo "/data *(rw,sync,no_root_squash)" > /etc/exports
 sudo exportfs -a
-
 
 # Loop through all worker nodes, update hosts file and copy ssh public key to it
 # The script make the assumption that the node is called %WORKER+<index> and have
