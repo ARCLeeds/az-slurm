@@ -22,6 +22,7 @@
           "type": "string",
           "defaultValue": "Standard_D2_v2",
           "allowedValues": [
+              "Standard_B2s",
               "Standard_D2_v2",
               "Standard_G1",
               "Standard_D11_v2"
@@ -71,7 +72,14 @@
           "minValue": 1,
           "maxValue": 63,
           "metadata": {
-              "description": "Number of 100 GB luns to assign as data disks to combine in NFS export"
+              "description": "Number of luns to assign as data disks to combine in NFS export"
+          }
+      },
+      "sizeDataDisks": {
+          "type": "int",
+          "defaultValue": "1",
+          "metadata": {
+              "description": "Size of lun to assign as data disks to combine in NFS export"
           }
       },
       "_artifactsLocation": {
@@ -79,7 +87,7 @@
           "metadata": {
               "description": "The base URI where artifacts required by this template are located. When the template is deployed using the accompanying scripts, a private location in the subscription will be used and this value will be automatically generated."
           },
-          "defaultValue": "https://gitlab.oit.duke.edu/OIT-DCC/Azure-Slurm/raw/master/CentOS"
+          "defaultValue": "https://raw.githubusercontent.com/ARCLeeds/az-slurm/main/CentOS"
       },
       "_artifactsLocationSasToken": {
           "type": "securestring",
@@ -240,7 +248,7 @@
                               "name": "[concat('datadisk-',copyIndex('dataDisks'))]",
                               "caching": "ReadWrite",
                               "lun": "[copyIndex('dataDisks')]",
-                              "diskSizeGB": "100",
+                              "diskSizeGB": "[parameters('sizeDataDisks')]",
                               "createOption": "Empty",
                               "managedDisk": {
                                   "storageAccountType": "Standard_LRS"

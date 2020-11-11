@@ -2,11 +2,26 @@
   "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
+    "headNodeSize": {
+      "value": "Standard_B2s"
+    },
+    "workerNodeSize": {
+      "value": "Standard_D2_v2"
+    },
+    "workerImageOffer": {
+      "value": "CentOS"
+    },
+    "numDataDisks": {
+      "value": 1
+    },
+    "sizeDataDisks": {
+      "value": 1
+    },
     "adminUsername": {
-      "value": "GEN-UNIQUE"
+      "value": "FIXME"
     },
     "adminPassword": {
-      "value": "GEN-PASSWORD"
+      "value": "FIXME"
     }
   }
 }

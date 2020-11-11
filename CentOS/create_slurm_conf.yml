@@ -9,8 +9,8 @@
       delegate_to: localhost
       become: yes
     - systemd:
-      name: slurmctld
-      state: restarted
+        name: slurmctld
+        state: restarted
 
 - hosts: workers
   gather_facts: true
@@ -20,5 +20,5 @@
     - template: src=slurm_conf.j2 dest=/etc/slurm/slurm.conf
       become: yes
     - systemd:
-      name: slurmd
-      state: restarted
+        name: slurmd
+        state: restarted

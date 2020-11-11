@@ -24,3 +24,6 @@ sudo systemctl start rpcbind
 sudo mkdir /data
 sudo bash -c 'echo -e "master:/data\t/data\tnfs\tintr\t0 0" >> /etc/fstab'
 sudo mount /data
+sudo bash -c 'echo -e "/data/home /home none bind 0 0" >> /etc/fstab'
+sudo mount -a
+sudo yum -y install openmpi3-devel
