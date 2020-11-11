@@ -33,13 +33,13 @@ ADMIN_PASSWORD=$8
 TEMPLATE_BASE=$9
 
 # Update sudo rule for azureuser
-sudo sed -i -- 's/azureuser ALL=(ALL) ALL/azureuser ALL=(ALL) NOPASSWD:ALL/g' /etc/sudoers.d/waagent
+sed -i -- 's/azureuser ALL=(ALL) ALL/azureuser ALL=(ALL) NOPASSWD:ALL/g' /etc/sudoers.d/waagent
 
 # Update master node
 echo $MASTER_IP $MASTER_NAME >> /etc/hosts
 echo $MASTER_IP $MASTER_NAME > /tmp/hosts.$$
-sudo echo "* soft memlock unlimited" >> /etc/security/limits.conf
-sudo echo "* hard memlock unlimited" >> /etc/security/limits.conf
+echo "* soft memlock unlimited" >> /etc/security/limits.conf
+echo "* hard memlock unlimited" >> /etc/security/limits.conf
 
 # Update ssh config file to ignore unknown host
 # Note all settings are for azureuser, NOT root
@@ -51,45 +51,45 @@ if ! [ -f /home/$ADMIN_USERNAME/.ssh/id_rsa ]; then
 fi
 
 # Enable EPEL
-sudo yum -y install epel-release
+yum -y install epel-release
 
 # Install sshpass to automate ssh-copy-id action
-sudo yum install -y sshpass
+yum install -y sshpass
 
 # Install ansible and start the ansible hosts file
-sudo yum -y install ansible
-sudo echo "[master]" > /etc/ansible/hosts
-sudo echo $MASTER_NAME >> /etc/ansible/hosts
-sudo echo "[workers]" >> /etc/ansible/hosts
+yum -y install ansible
+echo "[master]" > /etc/ansible/hosts
+echo $MASTER_NAME >> /etc/ansible/hosts
+echo "[workers]" >> /etc/ansible/hosts
 
 # Install software needed for NFS server
-sudo yum -y install nfs-utils libnfsidmap
-sudo systemctl enable rpcbind
-sudo systemctl enable nfs-server
-sudo systemctl start rpcbind
-sudo systemctl start nfs-server
-sudo systemctl start rpc-statd
-sudo systemctl start nfs-idmapd
+yum -y install nfs-utils libnfsidmap
+systemctl enable rpcbind
+systemctl enable nfs-server
+systemctl start rpcbind
+systemctl start nfs-server
+systemctl start rpc-statd
+systemctl start nfs-idmapd
 
 # Configure data disks and export via an NFS share
 DATADISKS="$(lsblk -dlnpo name | grep -v -E 'sda|sdb|fd0|sr0')"
 
-sudo pvcreate $DATADISKS
-sudo vgcreate vg_data $DATADISKS
-sudo lvcreate -n lv_data -l 100%FREE vg_data
-sudo mkfs.xfs /dev/vg_data/lv_data
-sudo mkdir /data
-sudo echo -e "/dev/mapper/vg_data-lv_data\t/data\txfs\tdefaults\t0 0" >> /etc/fstab
-sudo mount /data
-sudo chmod 777 /data
+pvcreate $DATADISKS
+vgcreate vg_data $DATADISKS
+lvcreate -n lv_data -l 100%FREE vg_data
+mkfs.xfs /dev/vg_data/lv_data
+mkdir /data
+echo -e "/dev/mapper/vg_data-lv_data\t/data\txfs\tdefaults\t0 0" >> /etc/fstab
+mount /data
+chmod 1777 /data
 mkdir /data/home
-sudo mv /home/* /data/home/
-sudo echo -e "/data/home\t/home\tnone\tbind\t0 0" >> /etc/fstab
-sudo mount /home
-sudo restorecon /home
+mv /home/* /data/home/
+echo -e "/data/home\t/home\tnone\tbind\t0 0" >> /etc/fstab
+mount /home
+restorecon /home
 
-sudo echo "/data *(rw,sync,no_root_squash)" > /etc/exports
-sudo exportfs -a
+echo "/data *(rw,sync,no_root_squash)" > /etc/exports
+exportfs -a
 
 sudo -u $ADMIN_USERNAME sh -c "sshpass -p '$ADMIN_PASSWORD' ssh-copy-id master"
 # Loop through all worker nodes, update hosts file and copy ssh public key to it
@@ -103,33 +103,33 @@ do
    echo $WORKER_IP_BASE$workerip $WORKER_NAME$i >> /etc/hosts
    echo $WORKER_IP_BASE$workerip $WORKER_NAME$i >> /tmp/hosts.$$
    sudo -u $ADMIN_USERNAME sh -c "sshpass -p '$ADMIN_PASSWORD' ssh-copy-id $WORKER_NAME$i"
-   sudo echo $WORKER_NAME$i >> /etc/ansible/hosts
+   echo $WORKER_NAME$i >> /etc/ansible/hosts
    i=`expr $i + 1`
 done
 
 # Install the Development Tools
-sudo yum -y groupinstall "Development Tools"
-sudo yum -y install rpm-build
+yum -y groupinstall "Development Tools"
+yum -y install rpm-build
 
 # Build SLURM on master node
 ###################################
 
 wget https://download.schedmd.com/slurm/slurm-17.11.8.tar.bz2
-sudo yum install -y hwloc-devel hwloc-libs hdf5-devel munge munge-devel munge-libs numactl-devel numactl-libs readline-devel openssl-devel pam-devel perl-ExtUtils-MakeMaker mariadb-devel
+yum install -y hwloc-devel hwloc-libs hdf5-devel munge munge-devel munge-libs numactl-devel numactl-libs readline-devel openssl-devel pam-devel perl-ExtUtils-MakeMaker mariadb-devel
 rpmbuild -ta slurm-17.11.8.tar.bz2
 
 # Generate the munge key
 echo "Generating munge key"
 dd if=/dev/urandom bs=1 count=1024 >/tmp/munge.key
-sudo chown munge:munge /tmp/munge.key
-sudo chmod 600 /tmp/munge.key
-sudo mv /tmp/munge.key /etc/munge/munge.key
+chown munge:munge /tmp/munge.key
+chmod 600 /tmp/munge.key
+mv /tmp/munge.key /etc/munge/munge.key
 
 # Create the slurm user
-sudo useradd -c "Slurm scheduler" slurm
+useradd -c "Slurm scheduler" slurm
 
 # Install the packages needed on the master
-sudo yum -y install /rpmbuild/RPMS/x86_64/slurm-17.11.8-1.el7.centos.x86_64.rpm \
+yum -y install /rpmbuild/RPMS/x86_64/slurm-17.11.8-1.el7.centos.x86_64.rpm \
 /rpmbuild/RPMS/x86_64/slurm-contribs-17.11.8-1.el7.centos.x86_64.rpm \
 /rpmbuild/RPMS/x86_64/slurm-example-configs-17.11.8-1.el7.centos.x86_64.rpm \
 /rpmbuild/RPMS/x86_64/slurm-pam_slurm-17.11.8-1.el7.centos.x86_64.rpm \
@@ -144,25 +144,25 @@ wget $TEMPLATE_BASE/slurm.template.conf -O $SLURMCONF
 sed -i -- 's/__MASTERNODE__/'"$MASTER_NAME"'/g' $SLURMCONF
 lastvm=`expr $NUM_OF_VM - 1`
 sed -i -- 's/__WORKERNODES__/'"$WORKER_NAME"'[0-'"$lastvm"']/g' $SLURMCONF
-sudo cp -f $SLURMCONF /etc/slurm/slurm.conf
-sudo chown slurm /etc/slurm/slurm.conf
-sudo chmod o+w /var/spool # Write access for slurmctld log. Consider switch log file to another location
-sudo systemctl daemon-reload
-sudo systemctl enable munge
-sudo systemctl start munge # Start munged
-sudo systemctl enable slurmctld
-sudo systemctl start  slurmctld # Start the master daemon service
+cp -f $SLURMCONF /etc/slurm/slurm.conf
+chown slurm /etc/slurm/slurm.conf
+chmod o+w /var/spool # Write access for slurmctld log. Consider switch log file to another location
+systemctl daemon-reload
+systemctl enable munge
+systemctl start munge # Start munged
+systemctl enable slurmctld
+systemctl start  slurmctld # Start the master daemon service
 
 # Set up the Ansible playbook that can build the /etc/slurm/slurm.conf file
 PLAYBOOK=/tmp/create_slurm_conf.yml.$$
 wget $TEMPLATE_BASE/create_slurm_conf.yml -O $PLAYBOOK
 sed -i -- 's/__MASTERNODE__/'"$MASTER_NAME"'/g' $PLAYBOOK
 cp -f $PLAYBOOK /home/$ADMIN_USERNAME/create_slurm_conf.yml
-sudo chown $ADMIN_USERNAME /home/$ADMIN_USERNAME/create_slurm_conf.yml
+chown $ADMIN_USERNAME /home/$ADMIN_USERNAME/create_slurm_conf.yml
 SLURMJ2=/tmp/slurm_conf.j2.$$
 wget $TEMPLATE_BASE/slurm_conf.j2 -O $SLURMJ2
 cp -f $SLURMJ2 /home/$ADMIN_USERNAME/slurm_conf.j2
-sudo chown $ADMIN_USERNAME /home/slurm_conf.j2
+chown $ADMIN_USERNAME /home/slurm_conf.j2
 
 # Download worker_config.sh and add admin password for sudo
 WORKERCONFIG=/tmp/worker_config.sh.$$
@@ -173,11 +173,11 @@ sed -i -- 's/__ADMINPASS__/'"$ADMIN_PASSWORD"'/g' $WORKERCONFIG
 READCSV=/tmp/user_read_csv_create_yml.py.$$
 wget $TEMPLATE_BASE/user_read_csv_create_yml.py -O $READCSV
 cp -f $READCSV /home/$ADMIN_USERNAME/user_read_csv_create_yml.py
-sudo chown $ADMIN_USERNAME /home/$ADMIN_USERNAME/user_read_csv_create_yml.py
+chown $ADMIN_USERNAME /home/$ADMIN_USERNAME/user_read_csv_create_yml.py
 CREATEUSERS=/tmp/create_users.yml.$$
 wget $TEMPLATE_BASE/create_users.yml -O $CREATEUSERS
 cp -f $CREATEUSERS /home/$ADMIN_USERNAME/create_users.yml
-sudo chown $ADMIN_USERNAME /home/$ADMIN_USERNAME/create_users.yml
+chown $ADMIN_USERNAME /home/$ADMIN_USERNAME/create_users.yml
 
 # Download the SSH configuration files
 SSHDCONFIG=/tmp/sshd_config.$$
@@ -196,11 +196,10 @@ echo 'master' > $shosts_equiv
 echo "Prepare the local copy of munge key" 
 
 mungekey=/tmp/munge.key.$$
-sudo cp -f /etc/munge/munge.key $mungekey
-sudo chown $ADMIN_USERNAME $mungekey
+cp -f /etc/munge/munge.key $mungekey
+chown $ADMIN_USERNAME $mungekey
 
 echo "Start looping all workers" 
-shosts.equiv
 i=0
 while [ $i -lt $NUM_OF_VM ]
 do
@@ -231,8 +230,8 @@ rm -f $mungekey
 
 # Update slurm.conf with the number of CPUs detected on the compute nodes
 /usr/bin/ansible-playbook create_slurm_conf.yml
-sudo systemctl restart slurmctld
-sudo scontrol reconfigure
+systemctl restart slurmctld
+scontrol reconfigure
 
 # Configure ssh for host based authentication
 i=0
@@ -255,10 +254,10 @@ do
    i=`expr $i + 1`
 done
 
-sudo cp $ssh_known_hosts /etc/ssh/ssh_known_hosts
-sudo cp $shosts_equiv /etc/ssh/shosts.equiv
-sudo cp $SSHDCONFIG /etc/ssh/sshd_config
-sudo cp $SSHCONFIG /etc/ssh/ssh_config
-sudo systemctl restart sshd
+cp $ssh_known_hosts /etc/ssh/ssh_known_hosts
+cp $shosts_equiv /etc/ssh/shosts.equiv
+cp $SSHDCONFIG /etc/ssh/sshd_config
+cp $SSHCONFIG /etc/ssh/ssh_config
+systemctl restart sshd
 
 exit 0
