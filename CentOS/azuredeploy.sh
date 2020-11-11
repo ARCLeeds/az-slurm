@@ -91,7 +91,7 @@ restorecon /home
 echo "/data *(rw,sync,no_root_squash)" > /etc/exports
 exportfs -a
 
-sudo -u $ADMIN_USERNAME sh -c "sshpass -p '$ADMIN_PASSWORD' ssh-copy-id master"
+install -m 600 -o $ADMIN_USERNAME -g $ADMIN_USERNAME /home/$ADMIN_USERNAME/.ssh/id_rsa.pub /home/$ADMIN_USERNAME/.ssh/authorized_keys
 # Loop through all worker nodes, update hosts file and copy ssh public key to it
 # The script make the assumption that the node is called %WORKER+<index> and have
 # static IP in sequence order
@@ -259,5 +259,7 @@ cp $shosts_equiv /etc/ssh/shosts.equiv
 cp $SSHDCONFIG /etc/ssh/sshd_config
 cp $SSHCONFIG /etc/ssh/ssh_config
 systemctl restart sshd
+
+yum -y install openmpi3-devel
 
 exit 0
