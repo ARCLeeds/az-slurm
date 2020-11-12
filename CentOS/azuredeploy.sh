@@ -91,6 +91,13 @@ restorecon /home
 echo "/data *(rw,sync,no_root_squash)" > /etc/exports
 exportfs -a
 
+cat > /usr/local/aad-sync <EOB
+#!/bin/bash
+
+diff /etc/aadpasswd /etc/aadpasswd.old || exit 0
+EOB
+chmod 755 /usr/local/aad-sync
+
 install -m 600 -o $ADMIN_USERNAME -g $ADMIN_USERNAME /home/$ADMIN_USERNAME/.ssh/id_rsa.pub /home/$ADMIN_USERNAME/.ssh/authorized_keys
 # Loop through all worker nodes, update hosts file and copy ssh public key to it
 # The script make the assumption that the node is called %WORKER+<index> and have
@@ -103,9 +110,19 @@ do
    echo $WORKER_IP_BASE$workerip $WORKER_NAME$i >> /etc/hosts
    echo $WORKER_IP_BASE$workerip $WORKER_NAME$i >> /tmp/hosts.$$
    sudo -u $ADMIN_USERNAME sh -c "sshpass -p '$ADMIN_PASSWORD' ssh-copy-id $WORKER_NAME$i"
+   /usr/bin/ssh-keyscan $workerip >> $ssh_known_hosts
    echo $WORKER_NAME$i >> /etc/ansible/hosts
+   echo 'rsync --rsync-path="sudo rsync" /etc/aadpasswd $WORKER_NAME$i:/etc/aadpasswd' >> /usr/local/aad-sync
    i=`expr $i + 1`
 done
+
+cat >> /usr/local/aad-sync <EOB
+sudo cp /etc/aadpasswd /etc/aadpasswd.old
+EOB
+chmod 755 /usr/local/aad-sync
+
+# Make a crontab entry to keep this file in sync.  Botch for now
+(crontab -u $ADMIN_USERNAME -l ; echo "0 * * * * /usr/local/sbin/aad-sync") | crontab -u $ADMIN_USERNAME -
 
 # Install the Development Tools
 yum -y groupinstall "Development Tools"
