@@ -94,7 +94,7 @@ exportfs -a
 cat > /usr/local/aad-sync <EOB
 #!/bin/bash
 
-diff /etc/aadpasswd /etc/aadpasswd.old || exit 0
+diff /etc/aadpasswd /etc/aadpasswd.old && exit 0
 EOB
 chmod 755 /usr/local/aad-sync
 
@@ -122,7 +122,7 @@ EOB
 chmod 755 /usr/local/aad-sync
 
 # Make a crontab entry to keep this file in sync.  Botch for now
-(crontab -u $ADMIN_USERNAME -l ; echo "0 * * * * /usr/local/sbin/aad-sync") | crontab -u $ADMIN_USERNAME -
+(crontab -u $ADMIN_USERNAME -l ; echo "* * * * * /usr/local/sbin/aad-sync") | crontab -u $ADMIN_USERNAME -
 
 # Install the Development Tools
 yum -y groupinstall "Development Tools"
@@ -282,5 +282,8 @@ yum -y install openmpi3-devel
 # This should be removed and fixed
 setenforce 0
 sed -i 's/SELINUX=enforcing/SELINUX=permissive/' /etc/sysconfig/selinux
+
+# Make sudo passwordless for AAD Admins
+echo '%aad_admins ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/aad_admins
 
 exit 0
