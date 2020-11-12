@@ -16,12 +16,6 @@
     },
     "sizeDataDisks": {
       "value": 1
-    },
-    "adminUsername": {
-      "value": "FIXME"
-    },
-    "adminPassword": {
-      "value": "FIXME"
     }
   }
 }

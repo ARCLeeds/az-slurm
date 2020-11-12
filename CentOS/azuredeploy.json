@@ -5,15 +5,13 @@
       "adminUsername": {
           "type": "string",
           "defaultValue": "azureuser",
-          "allowedValues": [
-              "azureuser"
-          ],
           "metadata": {
               "description": "User name for the Virtual Machine. Pick a valid username otherwise there will be a BadRequest error."
           }
       },
       "adminPassword": {
           "type": "securestring",
+          "defaultValue": "[concat('P', uniqueString(resourceGroup().id, 'a67e5975-3c34-42a1-94d9-3ac88b7410d8'), 'x', '!')]",
           "metadata": {
               "description": "Admin password. Pick a complex password with uppercase letters, lowercase letters, digits, and symbols. The password should not be longer than 16. Otherwise you'll get a BadRequest error."
           }
@@ -388,6 +386,10 @@
       "dnsName": {
           "type": "string",
           "value": "[reference(variables('publicIPAddressName')).dnsSettings.fqdn]"
+      },
+      "adminPassword": {
+          "type": "string",
+          "value": "[parameters('adminPassword')]"
       }
   }
 }
