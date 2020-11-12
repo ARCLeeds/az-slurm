@@ -261,6 +261,9 @@ cp $SSHCONFIG /etc/ssh/ssh_config
 systemctl restart sshd
 
 yum -y install openmpi3-devel
-yum -y reinstall aadlogin-selinux
+
+# This should be removed and fixed
+setenforce 0
+sed -i 's/SELINUX=enforcing/SELINUX=permissive/' /etc/sysconfig/selinux
 
 exit 0
