@@ -246,7 +246,7 @@ done
 rm -f $mungekey
 
 # Update slurm.conf with the number of CPUs detected on the compute nodes
-/usr/bin/ansible-playbook create_slurm_conf.yml
+sudo -ui $ADMIN_USERNAME /usr/bin/ansible-playbook create_slurm_conf.yml
 systemctl restart slurmctld
 scontrol reconfigure
 
