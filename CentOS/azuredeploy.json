@@ -211,6 +211,9 @@
           "type": "Microsoft.Compute/virtualMachines",
           "name": "[variables('vmNameMaster')]",
           "location": "[parameters('location')]",
+          "identity": {
+            "type": "SystemAssigned"
+	  },
           "dependsOn": [
               "[variables('nicNameMaster')]"
           ],
@@ -336,6 +339,9 @@
           "type": "Microsoft.Compute/virtualMachines",
           "name": "[concat(variables('vmNameWorker'), copyindex())]",
           "location": "[parameters('location')]",
+          "identity": {
+            "type": "SystemAssigned"
+	  },
           "dependsOn": [
               "nicLoop",
               "[concat('Microsoft.Compute/availabilitySets/', variables('availabilitySetName'))]"
