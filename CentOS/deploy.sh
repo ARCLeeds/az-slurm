@@ -2,6 +2,6 @@
 
 . private.sh
 
-az deployment group create --resource-group uol_it_rc_slurm_test --template-file azuredeploy.json --parameters azuredeploy.parameters.json
+az deployment group create --name azure-slurm-test --resource-group $RG --template-file azuredeploy.json --parameters azuredeploy.parameters.json
 
 ./azuread-user.sh
