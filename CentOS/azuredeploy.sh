@@ -115,7 +115,7 @@ do
    sudo -u $ADMIN_USERNAME sh -c "sshpass -p '$ADMIN_PASSWORD' ssh-copy-id $WORKER_NAME$i"
    /usr/bin/ssh-keyscan $WORKER_IP_BASE$workerip >> $ssh_known_hosts
    echo $WORKER_NAME$i >> /etc/ansible/hosts
-   echo 'rsync --rsync-path="sudo rsync" /etc/aadpasswd $WORKER_NAME$i:/etc/aadpasswd' >> /usr/local/sbin/aad-sync
+   echo "rsync --rsync-path='sudo rsync' /etc/aadpasswd $WORKER_NAME$i:/etc/aadpasswd" >> /usr/local/sbin/aad-sync
    i=`expr $i + 1`
 done
 
