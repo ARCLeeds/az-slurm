@@ -110,7 +110,7 @@ do
    echo $WORKER_IP_BASE$workerip $WORKER_NAME$i >> /etc/hosts
    echo $WORKER_IP_BASE$workerip $WORKER_NAME$i >> /tmp/hosts.$$
    sudo -u $ADMIN_USERNAME sh -c "sshpass -p '$ADMIN_PASSWORD' ssh-copy-id $WORKER_NAME$i"
-   /usr/bin/ssh-keyscan $workerip >> $ssh_known_hosts
+   /usr/bin/ssh-keyscan $WORKER_IP_BASE$workerip >> $ssh_known_hosts
    echo $WORKER_NAME$i >> /etc/ansible/hosts
    echo 'rsync --rsync-path="sudo rsync" /etc/aadpasswd $WORKER_NAME$i:/etc/aadpasswd' >> /usr/local/aad-sync
    i=`expr $i + 1`
@@ -246,7 +246,7 @@ done
 rm -f $mungekey
 
 # Update slurm.conf with the number of CPUs detected on the compute nodes
-sudo -ui $ADMIN_USERNAME /usr/bin/ansible-playbook create_slurm_conf.yml
+sudo -iu $ADMIN_USERNAME /usr/bin/ansible-playbook create_slurm_conf.yml
 systemctl restart slurmctld
 scontrol reconfigure
 
