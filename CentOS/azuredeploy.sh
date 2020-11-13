@@ -91,7 +91,7 @@ restorecon /home
 echo "/data *(rw,sync,no_root_squash)" > /etc/exports
 exportfs -a
 
-cat > /usr/local/aad-sync <<EOB
+cat > /usr/local/sbin/aad-sync <<EOB
 #!/bin/bash
 
 diff /etc/aadpasswd /etc/aadpasswd.old && exit 0
