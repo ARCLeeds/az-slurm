@@ -32,6 +32,9 @@ ADMIN_USERNAME=$7
 ADMIN_PASSWORD=$8
 TEMPLATE_BASE=$9
 
+ssh_known_hosts=/tmp/ssh_known_hosts.$$
+shosts_equiv=/tmp/shosts.equiv.$$
+
 # Update sudo rule for azureuser
 sed -i -- 's/azureuser ALL=(ALL) ALL/azureuser ALL=(ALL) NOPASSWD:ALL/g' /etc/sudoers.d/waagent
 
@@ -203,9 +206,7 @@ SSHCONFIG=/tmp/ssh_config.$$
 wget $TEMPLATE_BASE/ssh_config -O $SSHCONFIG
 
 # Start building needed SSH files used for host authentication
-ssh_known_hosts=/tmp/ssh_known_hosts.$$
-/usr/bin/ssh-keyscan master > $ssh_known_hosts
-shosts_equiv=/tmp/shosts.equiv.$$
+/usr/bin/ssh-keyscan master >> $ssh_known_hosts
 echo 'master' > $shosts_equiv
 
 # Install slurm on all nodes
