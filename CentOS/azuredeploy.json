@@ -399,7 +399,7 @@
 			  "autoUpgradeMinorVersion": true
 		  },
 		  "dependsOn": [
-			  "[concat('Microsoft.Compute/virtualMachines/',variables('vmNameWorker')', copyindex())]"
+			  "[concat('Microsoft.Compute/virtualMachines/',variables('vmNameWorker'), copyindex())]"
 		  ]
 	      }
 	  ]
