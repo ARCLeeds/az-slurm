@@ -91,12 +91,12 @@ restorecon /home
 echo "/data *(rw,sync,no_root_squash)" > /etc/exports
 exportfs -a
 
-cat > /usr/local/aad-sync <EOB
+cat > /usr/local/aad-sync <<EOB
 #!/bin/bash
 
 diff /etc/aadpasswd /etc/aadpasswd.old && exit 0
 EOB
-chmod 755 /usr/local/aad-sync
+chmod 755 /usr/local/sbin/aad-sync
 
 install -m 600 -o $ADMIN_USERNAME -g $ADMIN_USERNAME /home/$ADMIN_USERNAME/.ssh/id_rsa.pub /home/$ADMIN_USERNAME/.ssh/authorized_keys
 # Loop through all worker nodes, update hosts file and copy ssh public key to it
@@ -112,11 +112,11 @@ do
    sudo -u $ADMIN_USERNAME sh -c "sshpass -p '$ADMIN_PASSWORD' ssh-copy-id $WORKER_NAME$i"
    /usr/bin/ssh-keyscan $WORKER_IP_BASE$workerip >> $ssh_known_hosts
    echo $WORKER_NAME$i >> /etc/ansible/hosts
-   echo 'rsync --rsync-path="sudo rsync" /etc/aadpasswd $WORKER_NAME$i:/etc/aadpasswd' >> /usr/local/aad-sync
+   echo 'rsync --rsync-path="sudo rsync" /etc/aadpasswd $WORKER_NAME$i:/etc/aadpasswd' >> /usr/local/sbin/aad-sync
    i=`expr $i + 1`
 done
 
-cat >> /usr/local/aad-sync <EOB
+cat >> /usr/local/aad-sync <<EOB
 sudo cp /etc/aadpasswd /etc/aadpasswd.old
 EOB
 chmod 755 /usr/local/aad-sync
