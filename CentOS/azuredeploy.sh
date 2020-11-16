@@ -119,10 +119,9 @@ do
    i=`expr $i + 1`
 done
 
-cat >> /usr/local/aad-sync <<EOB
+cat >> /usr/local/sbin/aad-sync <<EOB
 sudo cp /etc/aadpasswd /etc/aadpasswd.old
 EOB
-chmod 755 /usr/local/aad-sync
 
 # Make a crontab entry to keep this file in sync.  Botch for now
 (crontab -u $ADMIN_USERNAME -l ; echo "* * * * * /usr/local/sbin/aad-sync") | crontab -u $ADMIN_USERNAME -
@@ -286,5 +285,16 @@ sed -i 's/SELINUX=enforcing/SELINUX=permissive/' /etc/sysconfig/selinux
 
 # Make sudo passwordless for AAD Admins
 echo '%aad_admins ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/aad_admins
+
+# Install AZ CLI
+rpm --import https://packages.microsoft.com/keys/microsoft.asc
+sh -c 'echo -e "[azure-cli]
+name=Azure CLI
+baseurl=https://packages.microsoft.com/yumrepos/azure-cli
+enabled=1
+gpgcheck=1
+gpgkey=https://packages.microsoft.com/keys/microsoft.asc" > /etc/yum.repos.d/azure-cli.repo'
+
+yum -y install azure-cli
 
 exit 0
