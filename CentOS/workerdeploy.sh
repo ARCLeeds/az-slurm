@@ -39,3 +39,6 @@ sed -i -- 's/azureuser ALL=(ALL) ALL/azureuser ALL=(ALL) NOPASSWD:ALL/g' /etc/su
 yum -y install openmpi3-devel
 # Fix broken tmpfilesd
 systemctl enable systemd-tmpfiles-setup
+
+# Make sudo passwordless for AAD Admins
+echo '%aad_admins ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/aad_admins
