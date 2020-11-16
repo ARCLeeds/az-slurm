@@ -208,6 +208,16 @@ wget $TEMPLATE_BASE/ssh_config -O $SSHCONFIG
 /usr/bin/ssh-keyscan master >> $ssh_known_hosts
 echo 'master' > $shosts_equiv
 
+# Prep shared files
+mkdir /data/system
+chmod 700 /data/system
+
+# Copy all the slurm RPMS
+cp -a /rpmbind/RPMS /data/system
+cp /etc/munge/munge.key /data/system
+cp /etc/slurm/slurm.conf /data/system
+cp /etc/hosts /data/system
+
 # Install slurm on all nodes
 # Also push munge key and slurm.conf to them
 echo "Prepare the local copy of munge key" 

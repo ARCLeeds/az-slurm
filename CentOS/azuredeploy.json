@@ -401,7 +401,30 @@
 		  "dependsOn": [
 			  "[concat('Microsoft.Compute/virtualMachines/',variables('vmNameWorker'), copyindex())]"
 		  ]
-	      }
+	      },
+              {
+                  "apiVersion": "2016-03-30",
+                  "type": "extensions",
+                  "name": "Installation",
+                  "location": "[parameters('location')]",
+                  "dependsOn": [
+                      "[concat('Microsoft.Compute/virtualMachines/',variables('vmNameWorker'), copyindex())]"
+                  ],
+                  "properties": {
+                      "publisher": "Microsoft.Azure.Extensions",
+                      "type": "CustomScript",
+                      "typeHandlerVersion": "2.0",
+                      "autoUpgradeMinorVersion": true,
+                      "settings": {
+                          "fileUris": [
+                              "[concat(parameters('_artifactsLocation'), '/workerdeploy.sh', parameters('_artifactsLocationSasToken'))]"
+                          ]
+                      },
+                      "protectedSettings": {
+                          "commandToExecute": "sh workerdeploy.sh"
+                      }
+                  }
+              }
 	  ]
       }
   ],
