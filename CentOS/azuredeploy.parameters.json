@@ -3,10 +3,10 @@
   "contentVersion": "1.0.0.0",
   "parameters": {
     "headNodeSize": {
-      "value": "Standard_B2s"
+      "value": "Standard_F4s_v2"
     },
     "workerNodeSize": {
-      "value": "Standard_D2_v2"
+      "value": "Standard_DS2_v2"
     },
     "workerImageOffer": {
       "value": "CentOS"
@@ -15,6 +15,9 @@
       "value": 1
     },
     "sizeDataDisks": {
+      "value": 1
+    },
+    "scaleNumber": {
       "value": 1
     }
   }

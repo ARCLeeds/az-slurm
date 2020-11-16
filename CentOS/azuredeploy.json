@@ -40,7 +40,8 @@
               "Standard_H8m",
               "Standard_H16m",
               "Standard_HB60rs",
-              "Standard_D2_v2"
+              "Standard_D2_v2",
+              "Standard_DS2_v2"
           ],
           "metadata": {
               "description": "Size of the worker nodes."
@@ -207,7 +208,7 @@
           }
       },
       {
-          "apiVersion": "2017-03-30",
+          "apiVersion": "2019-03-01",
           "type": "Microsoft.Compute/virtualMachines",
           "name": "[variables('vmNameMaster')]",
           "location": "[parameters('location')]",
@@ -335,7 +336,7 @@
           }
       },
       {
-          "apiVersion": "2017-03-30",
+          "apiVersion": "2019-03-01",
           "type": "Microsoft.Compute/virtualMachines",
           "name": "[concat(variables('vmNameWorker'), copyindex())]",
           "location": "[parameters('location')]",
@@ -371,8 +372,11 @@
                   },
                   "osDisk": {
                       "name": "[concat(variables('vmNameWorker'), copyindex(),'_OSDisk')]",
-                      "caching": "ReadWrite",
+                      "caching": "ReadOnly",
                       "createOption": "FromImage",
+                      "diffDiskSettings": {
+                         "option": "Local"
+		      },
                       "managedDisk": {
                           "storageAccountType": "Standard_LRS"
                       }
@@ -405,10 +409,11 @@
               {
                   "apiVersion": "2016-03-30",
                   "type": "extensions",
-                  "name": "Installation",
+                  "name": "WorkerInstallation",
                   "location": "[parameters('location')]",
                   "dependsOn": [
-                      "[concat('Microsoft.Compute/virtualMachines/',variables('vmNameWorker'), copyindex())]"
+                      "[concat('Microsoft.Compute/virtualMachines/',variables('vmNameWorker'), copyindex())]",
+                      "Installation"
                   ],
                   "properties": {
                       "publisher": "Microsoft.Azure.Extensions",

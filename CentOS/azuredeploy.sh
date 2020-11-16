@@ -212,8 +212,7 @@ echo 'master' > $shosts_equiv
 mkdir /data/system
 chmod 700 /data/system
 
-# Copy all the slurm RPMS
-cp -a /rpmbind/RPMS /data/system
+cp -a /rpmbuild/RPMS /data/system
 cp /etc/munge/munge.key /data/system
 cp /etc/slurm/slurm.conf /data/system
 cp /etc/hosts /data/system
