@@ -188,11 +188,6 @@ wget $TEMPLATE_BASE/slurm_conf.j2 -O $SLURMJ2
 cp -f $SLURMJ2 /home/$ADMIN_USERNAME/slurm_conf.j2
 chown $ADMIN_USERNAME /home/slurm_conf.j2
 
-# Download worker_config.sh and add admin password for sudo
-WORKERCONFIG=/tmp/worker_config.sh.$$
-wget $TEMPLATE_BASE/worker_config.sh -O $WORKERCONFIG
-sed -i -- 's/__ADMINPASS__/'"$ADMIN_PASSWORD"'/g' $WORKERCONFIG
-
 # Download the scripts to create users
 READCSV=/tmp/user_read_csv_create_yml.py.$$
 wget $TEMPLATE_BASE/user_read_csv_create_yml.py -O $READCSV
