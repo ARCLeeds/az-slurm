@@ -148,14 +148,14 @@ mv /tmp/munge.key /etc/munge/munge.key
 useradd -c "Slurm scheduler" slurm
 
 # Install the packages needed on the master
-yum -y install /rpmbuild/RPMS/x86_64/slurm-17.11.8-1.el7.centos.x86_64.rpm \
-/rpmbuild/RPMS/x86_64/slurm-contribs-17.11.8-1.el7.centos.x86_64.rpm \
-/rpmbuild/RPMS/x86_64/slurm-example-configs-17.11.8-1.el7.centos.x86_64.rpm \
-/rpmbuild/RPMS/x86_64/slurm-pam_slurm-17.11.8-1.el7.centos.x86_64.rpm \
-/rpmbuild/RPMS/x86_64/slurm-perlapi-17.11.8-1.el7.centos.x86_64.rpm \
-/rpmbuild/RPMS/x86_64/slurm-libpmi-17.11.8-1.el7.centos.x86_64.rpm \
-/rpmbuild/RPMS/x86_64/slurm-slurmctld-17.11.8-1.el7.centos.x86_64.rpm \
-/rpmbuild/RPMS/x86_64/slurm-slurmdbd-17.11.8-1.el7.centos.x86_64.rpm
+yum -y install /rpmbuild/RPMS/x86_64/slurm-17.11.8-1.el7.x86_64.rpm \
+/rpmbuild/RPMS/x86_64/slurm-contribs-17.11.8-1.el7.x86_64.rpm \
+/rpmbuild/RPMS/x86_64/slurm-example-configs-17.11.8-1.el7.x86_64.rpm \
+/rpmbuild/RPMS/x86_64/slurm-pam_slurm-17.11.8-1.el7.x86_64.rpm \
+/rpmbuild/RPMS/x86_64/slurm-perlapi-17.11.8-1.el7.x86_64.rpm \
+/rpmbuild/RPMS/x86_64/slurm-libpmi-17.11.8-1.el7.x86_64.rpm \
+/rpmbuild/RPMS/x86_64/slurm-slurmctld-17.11.8-1.el7.x86_64.rpm \
+/rpmbuild/RPMS/x86_64/slurm-slurmdbd-17.11.8-1.el7.x86_64.rpm
 
 # Download slurm.conf and fill in the node info
 SLURMCONF=/tmp/slurm.conf.$$
@@ -227,12 +227,12 @@ do
    sudo -u $ADMIN_USERNAME scp $SLURMCONF $ADMIN_USERNAME@$worker:/tmp/slurm.conf
    sudo -u $ADMIN_USERNAME scp $WORKERCONFIG $ADMIN_USERNAME@$worker:/tmp/worker_config.sh
    sudo -u $ADMIN_USERNAME scp /tmp/hosts.$$ $ADMIN_USERNAME@$worker:/tmp/hosts
-   sudo -u $ADMIN_USERNAME scp /rpmbuild/RPMS/x86_64/slurm-17.11.8-1.el7.centos.x86_64.rpm $ADMIN_USERNAME@$worker:/tmp/slurm-17.11.8-1.el7.centos.x86_64.rpm
-   sudo -u $ADMIN_USERNAME scp /rpmbuild/RPMS/x86_64/slurm-contribs-17.11.8-1.el7.centos.x86_64.rpm $ADMIN_USERNAME@$worker:/tmp/slurm-contribs-17.11.8-1.el7.centos.x86_64.rpm
-   sudo -u $ADMIN_USERNAME scp /rpmbuild/RPMS/x86_64/slurm-example-configs-17.11.8-1.el7.centos.x86_64.rpm $ADMIN_USERNAME@$worker:/tmp/slurm-example-configs-17.11.8-1.el7.centos.x86_64.rpm
-   sudo -u $ADMIN_USERNAME scp /rpmbuild/RPMS/x86_64/slurm-libpmi-17.11.8-1.el7.centos.x86_64.rpm $ADMIN_USERNAME@$worker:/tmp/slurm-libpmi-17.11.8-1.el7.centos.x86_64.rpm
-   sudo -u $ADMIN_USERNAME scp /rpmbuild/RPMS/x86_64/slurm-pam_slurm-17.11.8-1.el7.centos.x86_64.rpm $ADMIN_USERNAME@$worker:/tmp/slurm-pam_slurm-17.11.8-1.el7.centos.x86_64.rpm
-   sudo -u $ADMIN_USERNAME scp /rpmbuild/RPMS/x86_64/slurm-slurmd-17.11.8-1.el7.centos.x86_64.rpm $ADMIN_USERNAME@$worker:/tmp/slurm-slurmd-17.11.8-1.el7.centos.x86_64.rpm
+   sudo -u $ADMIN_USERNAME scp /rpmbuild/RPMS/x86_64/slurm-17.11.8-1.el7.x86_64.rpm $ADMIN_USERNAME@$worker:/tmp/slurm-17.11.8-1.el7.x86_64.rpm
+   sudo -u $ADMIN_USERNAME scp /rpmbuild/RPMS/x86_64/slurm-contribs-17.11.8-1.el7.x86_64.rpm $ADMIN_USERNAME@$worker:/tmp/slurm-contribs-17.11.8-1.el7.x86_64.rpm
+   sudo -u $ADMIN_USERNAME scp /rpmbuild/RPMS/x86_64/slurm-example-configs-17.11.8-1.el7.x86_64.rpm $ADMIN_USERNAME@$worker:/tmp/slurm-example-configs-17.11.8-1.el7.x86_64.rpm
+   sudo -u $ADMIN_USERNAME scp /rpmbuild/RPMS/x86_64/slurm-libpmi-17.11.8-1.el7.x86_64.rpm $ADMIN_USERNAME@$worker:/tmp/slurm-libpmi-17.11.8-1.el7.x86_64.rpm
+   sudo -u $ADMIN_USERNAME scp /rpmbuild/RPMS/x86_64/slurm-pam_slurm-17.11.8-1.el7.x86_64.rpm $ADMIN_USERNAME@$worker:/tmp/slurm-pam_slurm-17.11.8-1.el7.x86_64.rpm
+   sudo -u $ADMIN_USERNAME scp /rpmbuild/RPMS/x86_64/slurm-slurmd-17.11.8-1.el7.x86_64.rpm $ADMIN_USERNAME@$worker:/tmp/slurm-slurmd-17.11.8-1.el7.x86_64.rpm
 
    echo "Remote execute on $worker" 
    sudo -u $ADMIN_USERNAME ssh $ADMIN_USERNAME@$worker 'sh /tmp/worker_config.sh'
