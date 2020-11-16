@@ -3,7 +3,7 @@
 set -x
 exec >& /tmp/azuredeploy.log.$$
 
-# This script can be found on https://raw.githubusercontent.com/ARCLeeds/az-slurm/main/CentOS/azuredeploy.sh
+# This script can be found on https://raw.githubusercontent.com/ARCLeeds/az-slurm/static/CentOS/azuredeploy.sh
 # This script is part of azure deploy ARM template
 # This script will install SLURM on a Linux cluster deployed on a set of Azure VMs
 
