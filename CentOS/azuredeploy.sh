@@ -101,6 +101,11 @@ diff /etc/aadpasswd /etc/aadpasswd.old && exit 0
 EOB
 chmod 755 /usr/local/sbin/aad-sync
 
+# Start building needed SSH files used for host authentication
+/usr/bin/ssh-keyscan master > /tmp/ssh-template
+cat /tmp/ssh-template >> $ssh_known_hosts
+echo 'master' > $shosts_equiv
+
 install -m 600 -o $ADMIN_USERNAME -g $ADMIN_USERNAME /home/$ADMIN_USERNAME/.ssh/id_rsa.pub /home/$ADMIN_USERNAME/.ssh/authorized_keys
 # Loop through all worker nodes, update hosts file and copy ssh public key to it
 # The script make the assumption that the node is called %WORKER+<index> and have
@@ -111,9 +116,9 @@ do
    workerip=`expr $i + $WORKER_IP_START`
    echo 'I update host - '$WORKER_NAME$i
    echo $WORKER_IP_BASE$workerip $WORKER_NAME$i >> /etc/hosts
-   echo $WORKER_IP_BASE$workerip $WORKER_NAME$i >> /tmp/hosts.$$
    sudo -u $ADMIN_USERNAME sh -c "sshpass -p '$ADMIN_PASSWORD' ssh-copy-id $WORKER_NAME$i"
-   /usr/bin/ssh-keyscan $WORKER_IP_BASE$workerip >> $ssh_known_hosts
+   sed
+   sed "s/master/$WORKER_IP_BASE$workerip/" /tmp/ssh-template >> $ssh_known_hosts
    echo $WORKER_NAME$i >> /etc/ansible/hosts
    echo "rsync --rsync-path='sudo rsync' /etc/aadpasswd $WORKER_NAME$i:/etc/aadpasswd" >> /usr/local/sbin/aad-sync
    i=`expr $i + 1`
@@ -204,10 +209,6 @@ wget $TEMPLATE_BASE/sshd_config -O $SSHDCONFIG
 SSHCONFIG=/tmp/ssh_config.$$
 wget $TEMPLATE_BASE/ssh_config -O $SSHCONFIG
 
-# Start building needed SSH files used for host authentication
-/usr/bin/ssh-keyscan master >> $ssh_known_hosts
-echo 'master' > $shosts_equiv
-
 # Prep shared files
 mkdir /data/system
 chmod 700 /data/system
@@ -216,6 +217,8 @@ cp -a /rpmbuild/RPMS /data/system
 cp /etc/munge/munge.key /data/system
 cp /etc/slurm/slurm.conf /data/system
 cp /etc/hosts /data/system
+mkdir /data/system/ssh
+cp /etc/ssh/ssh* /data/system/ssh
 
 # Install slurm on all nodes
 # Also push munge key and slurm.conf to them
@@ -231,23 +234,8 @@ while [ $i -lt $NUM_OF_VM ]
 do
    worker=$WORKER_NAME$i
 
-   echo "SCP to $worker"  
-   sudo -u $ADMIN_USERNAME scp $mungekey $ADMIN_USERNAME@$worker:/tmp/munge.key 
-   sudo -u $ADMIN_USERNAME scp $SLURMCONF $ADMIN_USERNAME@$worker:/tmp/slurm.conf
-   sudo -u $ADMIN_USERNAME scp $WORKERCONFIG $ADMIN_USERNAME@$worker:/tmp/worker_config.sh
-   sudo -u $ADMIN_USERNAME scp /tmp/hosts.$$ $ADMIN_USERNAME@$worker:/tmp/hosts
-   sudo -u $ADMIN_USERNAME scp /rpmbuild/RPMS/x86_64/slurm-17.11.8-1.el7.x86_64.rpm $ADMIN_USERNAME@$worker:/tmp/slurm-17.11.8-1.el7.x86_64.rpm
-   sudo -u $ADMIN_USERNAME scp /rpmbuild/RPMS/x86_64/slurm-contribs-17.11.8-1.el7.x86_64.rpm $ADMIN_USERNAME@$worker:/tmp/slurm-contribs-17.11.8-1.el7.x86_64.rpm
-   sudo -u $ADMIN_USERNAME scp /rpmbuild/RPMS/x86_64/slurm-example-configs-17.11.8-1.el7.x86_64.rpm $ADMIN_USERNAME@$worker:/tmp/slurm-example-configs-17.11.8-1.el7.x86_64.rpm
-   sudo -u $ADMIN_USERNAME scp /rpmbuild/RPMS/x86_64/slurm-libpmi-17.11.8-1.el7.x86_64.rpm $ADMIN_USERNAME@$worker:/tmp/slurm-libpmi-17.11.8-1.el7.x86_64.rpm
-   sudo -u $ADMIN_USERNAME scp /rpmbuild/RPMS/x86_64/slurm-pam_slurm-17.11.8-1.el7.x86_64.rpm $ADMIN_USERNAME@$worker:/tmp/slurm-pam_slurm-17.11.8-1.el7.x86_64.rpm
-   sudo -u $ADMIN_USERNAME scp /rpmbuild/RPMS/x86_64/slurm-slurmd-17.11.8-1.el7.x86_64.rpm $ADMIN_USERNAME@$worker:/tmp/slurm-slurmd-17.11.8-1.el7.x86_64.rpm
-
-   echo "Remote execute on $worker" 
-   sudo -u $ADMIN_USERNAME ssh $ADMIN_USERNAME@$worker 'sh /tmp/worker_config.sh'
-
    # While we're looping through all the workers grab the ssh host keys for each to deploy ssh_known_hosts afterwards
-   /usr/bin/ssh-keyscan $worker >> $ssh_known_hosts
+   sed "s/master/$worker/" /tmp/ssh-template >> $ssh_known_hosts
    echo $worker >> $shosts_equiv
 
    i=`expr $i + 1`
