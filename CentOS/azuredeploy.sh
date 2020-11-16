@@ -75,7 +75,7 @@ systemctl start rpc-statd
 systemctl start nfs-idmapd
 
 # Configure data disks and export via an NFS share
-DATADISKS="$(lsblk -dlnpo name | grep -v -E 'sda|sdb|fd0|sr0')"
+DATADISKS=/dev/disk/azure/scsi1/*
 
 pvcreate $DATADISKS
 vgcreate vg_data $DATADISKS
