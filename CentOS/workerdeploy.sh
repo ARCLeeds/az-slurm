@@ -14,7 +14,7 @@ bash -c 'echo -e "/data/home /home none bind 0 0" >> /etc/fstab'
 mount -a
 setsebool -P use_nfs_home_dirs=on
 
-cp /data/ssh/ssh* /etc/ssh
+cp /data/system/ssh/ssh* /etc/ssh
 service sshd restart
 
 cp /data/system/hosts /etc/hosts
