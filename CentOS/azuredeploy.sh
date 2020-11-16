@@ -244,29 +244,7 @@ rm -f $mungekey
 
 # Update slurm.conf with the number of CPUs detected on the compute nodes
 sudo -iu $ADMIN_USERNAME /usr/bin/ansible-playbook create_slurm_conf.yml
-systemctl restart slurmctld
 scontrol reconfigure
-
-# Configure ssh for host based authentication
-i=0
-while [ $i -lt $NUM_OF_VM ]
-do
-   worker=$WORKER_NAME$i
-
-   echo "SCP to $worker"  
-   sudo -u $ADMIN_USERNAME scp $ssh_known_hosts $ADMIN_USERNAME@$worker:/tmp/ssh_known_hosts 
-   sudo -u $ADMIN_USERNAME scp $shosts_equiv $ADMIN_USERNAME@$worker:/tmp/shosts.equiv 
-   sudo -u $ADMIN_USERNAME scp $SSHDCONFIG $ADMIN_USERNAME@$worker:/tmp/sshd_config 
-   sudo -u $ADMIN_USERNAME scp $SSHCONFIG $ADMIN_USERNAME@$worker:/tmp/ssh_config 
-
-   sudo -u $ADMIN_USERNAME ssh $ADMIN_USERNAME@$worker 'sudo cp /tmp/ssh_known_hosts /etc/ssh/ssh_known_hosts'
-   sudo -u $ADMIN_USERNAME ssh $ADMIN_USERNAME@$worker 'sudo cp /tmp/shosts.equiv /etc/ssh/shosts.equiv'
-   sudo -u $ADMIN_USERNAME ssh $ADMIN_USERNAME@$worker 'sudo cp /tmp/sshd_config /etc/ssh/sshd_config'
-   sudo -u $ADMIN_USERNAME ssh $ADMIN_USERNAME@$worker 'sudo cp /tmp/ssh_config /etc/ssh/ssh_config'
-   sudo -u $ADMIN_USERNAME ssh $ADMIN_USERNAME@$worker 'sudo systemctl restart sshd'
-
-   i=`expr $i + 1`
-done
 
 cp $ssh_known_hosts /etc/ssh/ssh_known_hosts
 cp $shosts_equiv /etc/ssh/shosts.equiv
