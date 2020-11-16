@@ -39,8 +39,6 @@ shosts_equiv=/tmp/shosts.equiv.$$
 sed -i -- 's/azureuser ALL=(ALL) ALL/azureuser ALL=(ALL) NOPASSWD:ALL/g' /etc/sudoers.d/waagent
 
 # Update master node
-echo $MASTER_IP $MASTER_NAME >> /etc/hosts
-echo $MASTER_IP $MASTER_NAME > /tmp/hosts.$$
 echo "* soft memlock unlimited" >> /etc/security/limits.conf
 echo "* hard memlock unlimited" >> /etc/security/limits.conf
 
@@ -115,7 +113,6 @@ while [ $i -lt $NUM_OF_VM ]
 do
    workerip=`expr $i + $WORKER_IP_START`
    echo 'I update host - '$WORKER_NAME$i
-   echo $WORKER_IP_BASE$workerip $WORKER_NAME$i >> /etc/hosts
    sudo -u $ADMIN_USERNAME sh -c "sshpass -p '$ADMIN_PASSWORD' ssh-copy-id $WORKER_NAME$i"
    sed
    sed "s/master/$WORKER_IP_BASE$workerip/" /tmp/ssh-template >> $ssh_known_hosts
@@ -211,7 +208,6 @@ chmod 700 /data/system
 cp -a /rpmbuild/RPMS /data/system
 cp /etc/munge/munge.key /data/system
 cp /etc/slurm/slurm.conf /data/system
-cp /etc/hosts /data/system
 mkdir /data/system/ssh
 cp /etc/ssh/ssh* /data/system/ssh
 

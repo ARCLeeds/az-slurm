@@ -17,7 +17,6 @@ setsebool -P use_nfs_home_dirs=on
 cp /data/system/ssh/ssh* /etc/ssh
 service sshd restart
 
-cp /data/system/hosts /etc/hosts
 chmod g-w /var/log
 useradd -c "Slurm scheduler" slurm
 yum -y install epel-release
