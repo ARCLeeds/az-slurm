@@ -109,7 +109,7 @@
       "dnsName": "[concat('slurm-', uniqueString(resourceGroup().id))]",
       "imagePublisher": "OpenLogic",
       "headImageOffer": "CentOS",
-      "centOSVersion": "7_8",
+      "centOSVersion": "7_8-gen2",
       "publicIPAddressName": "publicip",
       "availabilitySetName": "avSet",
       "vmNameMaster": "master",
