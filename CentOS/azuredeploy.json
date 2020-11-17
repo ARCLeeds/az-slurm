@@ -86,7 +86,7 @@
           "metadata": {
               "description": "The base URI where artifacts required by this template are located. When the template is deployed using the accompanying scripts, a private location in the subscription will be used and this value will be automatically generated."
           },
-          "defaultValue": "https://raw.githubusercontent.com/ARCLeeds/az-slurm/main/CentOS"
+          "defaultValue": "https://raw.githubusercontent.com/ARCLeeds/az-slurm/main/CentOS/"
       },
       "_artifactsLocationSasToken": {
           "type": "securestring",
@@ -104,7 +104,8 @@
       }
   },
   "variables": {
-      "customData": "[concat('#include\n', uri(parameters('_artifactsLocation'), concat('cloud-init.txt', parameters('_artifactsLocationSasToken'))))]",
+      "workerCloudInit": "[concat('#include\n', uri(parameters('_artifactsLocation'), concat('worker-init.txt', parameters('_artifactsLocationSasToken'))))]",
+      "masterCloudInit": "[concat('#include\n', uri(parameters('_artifactsLocation'), concat('master-init.txt', parameters('_artifactsLocationSasToken'))))]",
       "dnsName": "[concat('slurm-', uniqueString(resourceGroup().id))]",
       "imagePublisher": "OpenLogic",
       "headImageOffer": "CentOS",
@@ -227,7 +228,7 @@
                   "adminUsername": "[parameters('adminUsername')]",
                   "adminPassword": "[parameters('adminPassword')]",
                   "computerName": "[variables('vmNameMaster')]",
-                  "customData": "[base64(variables('customData'))"
+                  "customData": "[base64(variables('masterCloudInit'))]"
               },
               "storageProfile": {
                   "imageReference": {
@@ -300,7 +301,7 @@
                       "autoUpgradeMinorVersion": true,
                       "settings": {
                           "fileUris": [
-                              "[concat(parameters('_artifactsLocation'), '/azuredeploy.sh', parameters('_artifactsLocationSasToken'))]"
+                              "[concat(parameters('_artifactsLocation'), 'azuredeploy.sh', parameters('_artifactsLocationSasToken'))]"
                           ]
                       },
                       "protectedSettings": {
@@ -364,7 +365,7 @@
                   "adminUsername": "[parameters('adminUsername')]",
                   "adminPassword": "[parameters('adminPassword')]",
                   "computerName": "[concat(variables('vmNameWorker'), copyindex())]",
-                  "customData": "[base64(variables('customData'))"
+                  "customData": "[base64(variables('workerCloudInit'))]"
               },
               "storageProfile": {
                   "imageReference": {
@@ -425,7 +426,7 @@
                       "autoUpgradeMinorVersion": true,
                       "settings": {
                           "fileUris": [
-                              "[concat(parameters('_artifactsLocation'), '/workerdeploy.sh', parameters('_artifactsLocationSasToken'))]"
+                              "[concat(parameters('_artifactsLocation'), 'workerdeploy.sh', parameters('_artifactsLocationSasToken'))]"
                           ]
                       },
                       "protectedSettings": {

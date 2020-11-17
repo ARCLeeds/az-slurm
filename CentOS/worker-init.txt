@@ -1,0 +1,36 @@
+#cloud-config
+
+runcmd:
+  - touch /tmp/runcmd
+packages:
+  - nfs-utils
+  - epel-release
+  - openmpi3-devel
+runcmd:
+  - systemctl enable rpcbind
+  - systemctl start rpcbind
+  - setsebool -P use_nfs_home_dirs=on
+mounts:
+  - [ "master:/data", /data, nfs intr 0 0 ]
+  - [ /data/home, /home, none, bind, 0 0 ]
+runcmd:
+  - cp /data/system/ssh/ssh* /etc/ssh
+  - service sshd restart
+packages:
+  - munge
+runcmd:
+  - chmod g-w /var/log
+  - useradd -c "Slurm scheduler" slurm
+  - yum -y install /data/system/RPMS/x86_64/slurm-20.02.6-1.el7.x86_64.rpm  /data/system/RPMS/x86_64/slurm-example-configs-20.02.6-1.el7.x86_64.rpm /data/system/RPMS/x86_64/slurm-libpmi-20.02.6-1.el7.x86_64.rpm /data/system/RPMS/x86_64/slurm-pam_slurm-20.02.6-1.el7.x86_64.rpm /data/system/RPMS/x86_64/slurm-slurmd-20.02.6-1.el7.x86_64.rpm
+  - install -m 600 -o munge -g munge /data/system/munge.key /etc/munge/munge.key
+  - systemctl daemon-reload
+  - systemctl enable munge
+  - systemctl start munge
+  - cp -f /data/system/slurm.conf /etc/slurm/slurm.conf
+  - chown slurm /etc/slurm/slurm.conf
+  - systemctl enable slurmd
+  - systemctl start  slurmd
+  - yum -y install openmpi
+  - "sed -i -- 's/azureuser ALL=(ALL) ALL/azureuser ALL=(ALL) NOPASSWD:ALL/g' /etc/sudoers.d/waagent"
+  - systemctl enable systemd-tmpfiles-setup
+  - "echo '%aad_admins ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/aad_admins"
