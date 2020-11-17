@@ -215,7 +215,8 @@ chmod 700 /data/system
 cp -a /root/.ssh/id_ed25519.pub /data/system/authorized_keys
 cp -a /rpmbuild/RPMS /data/system
 cp /etc/munge/munge.key /data/system
-cp /etc/slurm/slurm.conf /data/system
+mv /etc/slurm/slurm.conf /data/system
+ln -s /data/system/slurm.conf /etc/slurm/slurm.conf
 mkdir /data/system/ssh
 cp /etc/ssh/ssh* /data/system/ssh
 
