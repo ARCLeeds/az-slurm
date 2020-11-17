@@ -12,6 +12,7 @@ runcmd:
   - systemctl enable rpcbind
   - systemctl start rpcbind
   - setsebool -P use_nfs_home_dirs=on
+  - mount -a
   - cp /data/system/ssh/ssh* /etc/ssh
   - service sshd restart
   - touch /tmp/runcmd
