@@ -33,3 +33,5 @@ runcmd:
   - systemctl enable systemd-tmpfiles-setup
   - "echo '%aad_admins ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/aad_admins"
   - cp /data/system/authorized_keys /root/.ssh/authorized_keys
+  - sed -i 's/SELINUX=enforcing/SELINUX=permissive/' /etc/sysconfig/selinux
+  - setenforce 0
