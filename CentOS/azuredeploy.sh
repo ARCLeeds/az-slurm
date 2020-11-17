@@ -56,6 +56,8 @@ fi
 # Enable EPEL
 yum -y install epel-release
 
+yum -y install python3
+
 # Install sshpass to automate ssh-copy-id action
 yum install -y sshpass
 
