@@ -3,6 +3,8 @@
 set -x
 exec >& /tmp/azuredeploy.log.$$
 
+SLURMVERSION=20.02.6
+
 # This script can be found on https://raw.githubusercontent.com/ARCLeeds/az-slurm/main/CentOS/azuredeploy.sh
 # This script is part of azure deploy ARM template
 # This script will install SLURM on a Linux cluster deployed on a set of Azure VMs
@@ -135,9 +137,9 @@ yum -y install rpm-build
 # Build SLURM on master node
 ###################################
 
-wget https://download.schedmd.com/slurm/slurm-17.11.8.tar.bz2
+wget https://download.schedmd.com/slurm/slurm-${SLURMVERSION}.tar.bz2
 yum install -y hwloc-devel hwloc-libs hdf5-devel munge munge-devel munge-libs numactl-devel numactl-libs readline-devel openssl-devel pam-devel perl-ExtUtils-MakeMaker mariadb-devel
-rpmbuild -ta slurm-17.11.8.tar.bz2
+rpmbuild -ta slurm-${SLURMVERSION}.tar.bz2
 
 # Generate the munge key
 echo "Generating munge key"
@@ -150,14 +152,14 @@ mv /tmp/munge.key /etc/munge/munge.key
 useradd -c "Slurm scheduler" slurm
 
 # Install the packages needed on the master
-yum -y install /rpmbuild/RPMS/x86_64/slurm-17.11.8-1.el7.x86_64.rpm \
-/rpmbuild/RPMS/x86_64/slurm-contribs-17.11.8-1.el7.x86_64.rpm \
-/rpmbuild/RPMS/x86_64/slurm-example-configs-17.11.8-1.el7.x86_64.rpm \
-/rpmbuild/RPMS/x86_64/slurm-pam_slurm-17.11.8-1.el7.x86_64.rpm \
-/rpmbuild/RPMS/x86_64/slurm-perlapi-17.11.8-1.el7.x86_64.rpm \
-/rpmbuild/RPMS/x86_64/slurm-libpmi-17.11.8-1.el7.x86_64.rpm \
-/rpmbuild/RPMS/x86_64/slurm-slurmctld-17.11.8-1.el7.x86_64.rpm \
-/rpmbuild/RPMS/x86_64/slurm-slurmdbd-17.11.8-1.el7.x86_64.rpm
+yum -y install /rpmbuild/RPMS/x86_64/slurm-${SLURMVERSION}-1.el7.x86_64.rpm \
+/rpmbuild/RPMS/x86_64/slurm-contribs-${SLURMVERSION}-1.el7.x86_64.rpm \
+/rpmbuild/RPMS/x86_64/slurm-example-configs-${SLURMVERSION}-1.el7.x86_64.rpm \
+/rpmbuild/RPMS/x86_64/slurm-pam_slurm-${SLURMVERSION}-1.el7.x86_64.rpm \
+/rpmbuild/RPMS/x86_64/slurm-perlapi-${SLURMVERSION}-1.el7.x86_64.rpm \
+/rpmbuild/RPMS/x86_64/slurm-libpmi-${SLURMVERSION}-1.el7.x86_64.rpm \
+/rpmbuild/RPMS/x86_64/slurm-slurmctld-${SLURMVERSION}-1.el7.x86_64.rpm \
+/rpmbuild/RPMS/x86_64/slurm-slurmdbd-${SLURMVERSION}-1.el7.x86_64.rpm
 
 # Download slurm.conf and fill in the node info
 SLURMCONF=/tmp/slurm.conf.$$

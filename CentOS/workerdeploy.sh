@@ -1,6 +1,8 @@
 #!/bin/bash
 exec >& /tmp/install.log
 
+SLURMVERSION=20.02.6
+
 yum -y install nfs-utils
 systemctl enable rpcbind
 systemctl start rpcbind
@@ -21,7 +23,7 @@ chmod g-w /var/log
 useradd -c "Slurm scheduler" slurm
 yum -y install epel-release
 yum -y install munge
-yum -y install /data/system/RPMS/x86_64/slurm-17.11.8-1.el7.x86_64.rpm  /data/system/RPMS/x86_64/slurm-example-configs-17.11.8-1.el7.x86_64.rpm /data/system/RPMS/x86_64/slurm-libpmi-17.11.8-1.el7.x86_64.rpm /data/system/RPMS/x86_64/slurm-pam_slurm-17.11.8-1.el7.x86_64.rpm /data/system/RPMS/x86_64/slurm-slurmd-17.11.8-1.el7.x86_64.rpm
+yum -y install /data/system/RPMS/x86_64/slurm-${SLURMVERSION}-1.el7.x86_64.rpm  /data/system/RPMS/x86_64/slurm-example-configs-${SLURMVERSION}-1.el7.x86_64.rpm /data/system/RPMS/x86_64/slurm-libpmi-${SLURMVERSION}-1.el7.x86_64.rpm /data/system/RPMS/x86_64/slurm-pam_slurm-${SLURMVERSION}-1.el7.x86_64.rpm /data/system/RPMS/x86_64/slurm-slurmd-${SLURMVERSION}-1.el7.x86_64.rpm
 install -m 600 -o munge -g munge /data/system/munge.key /etc/munge/munge.key
 ls -l /etc/munge/munge.key
 systemctl daemon-reload
