@@ -13,6 +13,7 @@ runcmd:
   - systemctl start rpcbind
   - setsebool -P use_nfs_home_dirs=on
   - mount -a
+  - cp -f /data/system/aadpasswd /etc/aadpasswd
   - cp /data/system/ssh/ssh* /etc/ssh
   - service sshd restart
   - touch /tmp/runcmd
@@ -23,8 +24,8 @@ runcmd:
   - systemctl daemon-reload
   - systemctl enable munge
   - systemctl start munge
-  - cp -f /data/system/slurm.conf /etc/slurm/slurm.conf
-  - chown slurm /etc/slurm/slurm.conf
+  - rm -f /etc/slurm/slurm.conf
+  - ln -s /data/system/slurm.conf /etc/slurm/slurm.conf
   - systemctl enable slurmd
   - systemctl start  slurmd
   - "sed -i -- 's/azureuser ALL=(ALL) ALL/azureuser ALL=(ALL) NOPASSWD:ALL/g' /etc/sudoers.d/waagent"
