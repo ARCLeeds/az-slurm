@@ -24,6 +24,7 @@ setsebool -P use_nfs_home_dirs=on
 rsync /data/system/ssh/* /etc/ssh/
 service sshd restart
 
+mkdir -p /root/.ssh
 cat /data/system/authorized_keys > /root/.ssh/authorized_keys
 
 chmod g-w /var/log
