@@ -250,6 +250,6 @@ cp /etc/munge/munge.key /data/system
 mv /etc/slurm/slurm.conf /data/system
 ln -s /data/system/slurm.conf /etc/slurm/slurm.conf
 mkdir /data/system/ssh
-cp /etc/ssh/s* /data/system/ssh/
+cp -a /etc/ssh/s* /data/system/ssh/
 
 exit 0
