@@ -379,9 +379,6 @@
                       "name": "[concat(variables('vmNameWorker'), copyindex(),'_OSDisk')]",
                       "caching": "ReadOnly",
                       "createOption": "FromImage",
-                      "diffDiskSettings": {
-                         "option": "Local"
-		      },
                       "managedDisk": {
                           "storageAccountType": "Standard_LRS"
                       }
