@@ -100,9 +100,11 @@ echo "/data *(rw,sync,no_root_squash)" > /etc/exports
 exportfs -a
 
 # Start building needed SSH files used for host authentication
-/usr/bin/ssh-keyscan master.internal.cloudapp.net > /tmp/ssh-template
+/usr/bin/ssh-keyscan master > /tmp/ssh-template
 cat /tmp/ssh-template >> $ssh_known_hosts
-echo 'master' > $shosts_equiv
+echo master > $shosts_equiv
+echo masterinternal.cloudapp.net >> $shosts_equiv
+
 
 install -m 600 -o $ADMIN_USERNAME -g $ADMIN_USERNAME /home/$ADMIN_USERNAME/.ssh/id_rsa.pub /home/$ADMIN_USERNAME/.ssh/authorized_keys
 # Loop through all worker nodes, update hosts file and copy ssh public key to it
@@ -211,7 +213,7 @@ do
    worker=$WORKER_NAME$i
 
    # While we're looping through all the workers grab the ssh host keys for each to deploy ssh_known_hosts afterwards
-   sed "s/master/$worker/" /tmp/ssh-template >> $ssh_known_hosts
+   sed "s/master/$worker,$worker.internal.cloudapp.net/" /tmp/ssh-template >> $ssh_known_hosts
    echo $worker >> $shosts_equiv
 
    i=`expr $i + 1`
