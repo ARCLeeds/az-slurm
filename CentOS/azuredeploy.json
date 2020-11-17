@@ -348,7 +348,8 @@
 	  },
           "dependsOn": [
               "nicLoop",
-              "[concat('Microsoft.Compute/availabilitySets/', variables('availabilitySetName'))]"
+              "[concat('Microsoft.Compute/availabilitySets/', variables('availabilitySetName'))]",
+              "Installation"
           ],
           "copy": {
               "name": "foo",

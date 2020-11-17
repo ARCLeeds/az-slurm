@@ -99,13 +99,6 @@ restorecon /home
 echo "/data *(rw,sync,no_root_squash)" > /etc/exports
 exportfs -a
 
-cat > /usr/local/sbin/aad-sync <<EOB
-#!/bin/bash
-
-diff /etc/aadpasswd /etc/aadpasswd.old && exit 0
-EOB
-chmod 755 /usr/local/sbin/aad-sync
-
 # Start building needed SSH files used for host authentication
 /usr/bin/ssh-keyscan master > /tmp/ssh-template
 cat /tmp/ssh-template >> $ssh_known_hosts
@@ -124,16 +117,8 @@ do
    sed
    sed "s/master/$WORKER_IP_BASE$workerip/" /tmp/ssh-template >> $ssh_known_hosts
    echo $WORKER_NAME$i >> /etc/ansible/hosts
-   echo "rsync --rsync-path='sudo rsync' /etc/aadpasswd $WORKER_NAME$i:/etc/aadpasswd" >> /usr/local/sbin/aad-sync
    i=`expr $i + 1`
 done
-
-cat >> /usr/local/sbin/aad-sync <<EOB
-sudo cp /etc/aadpasswd /etc/aadpasswd.old
-EOB
-
-# Make a crontab entry to keep this file in sync.  Botch for now
-(crontab -u $ADMIN_USERNAME -l ; echo "* * * * * /usr/local/sbin/aad-sync") | crontab -u $ADMIN_USERNAME -
 
 # Install the Development Tools
 yum -y groupinstall "Development Tools"
@@ -209,8 +194,9 @@ SSHCONFIG=/tmp/ssh_config.$$
 wget $TEMPLATE_BASE/ssh_config -O $SSHCONFIG
 
 # Prep shared files
-mkdir /data/system
-chmod 700 /data/system
+mkdir -m 711 /data/system
+touch /data/system/aadpasswd
+ln -s /data/system/aadpasswd /etc/aadpasswd
 
 cp -a /root/.ssh/id_ed25519.pub /data/system/authorized_keys
 cp -a /rpmbuild/RPMS /data/system
