@@ -104,8 +104,6 @@
       }
   },
   "variables": {
-      "workerCloudInit": "[concat('#include\n', uri(parameters('_artifactsLocation'), concat('worker-init.txt', parameters('_artifactsLocationSasToken'))))]",
-      "masterCloudInit": "[concat('#include\n', uri(parameters('_artifactsLocation'), concat('master-init.txt', parameters('_artifactsLocationSasToken'))))]",
       "dnsName": "[concat('slurm-', uniqueString(resourceGroup().id))]",
       "imagePublisher": "OpenLogic",
       "headImageOffer": "CentOS",
@@ -227,8 +225,7 @@
               "osProfile": {
                   "adminUsername": "[parameters('adminUsername')]",
                   "adminPassword": "[parameters('adminPassword')]",
-                  "computerName": "[variables('vmNameMaster')]",
-                  "customData": "[base64(variables('masterCloudInit'))]"
+                  "computerName": "[variables('vmNameMaster')]"
               },
               "storageProfile": {
                   "imageReference": {
@@ -365,8 +362,7 @@
               "osProfile": {
                   "adminUsername": "[parameters('adminUsername')]",
                   "adminPassword": "[parameters('adminPassword')]",
-                  "computerName": "[concat(variables('vmNameWorker'), copyindex())]",
-                  "customData": "[base64(variables('workerCloudInit'))]"
+                  "computerName": "[concat(variables('vmNameWorker'), copyindex())]"
               },
               "storageProfile": {
                   "imageReference": {
