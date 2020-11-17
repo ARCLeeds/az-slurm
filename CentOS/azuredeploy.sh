@@ -100,7 +100,7 @@ echo "/data *(rw,sync,no_root_squash)" > /etc/exports
 exportfs -a
 
 # Start building needed SSH files used for host authentication
-/usr/bin/ssh-keyscan master > /tmp/ssh-template
+/usr/bin/ssh-keyscan master.internal.cloudapp.net > /tmp/ssh-template
 cat /tmp/ssh-template >> $ssh_known_hosts
 echo 'master' > $shosts_equiv
 
