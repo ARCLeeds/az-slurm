@@ -1,5 +1,10 @@
 #!/bin/bash
+set -x
 exec >& /tmp/install.log
+
+# This should be removed and fixed
+setenforce 0
+sed -i 's/SELINUX=enforcing/SELINUX=permissive/' /etc/sysconfig/selinux
 
 SLURMVERSION=20.02.6
 
@@ -16,8 +21,10 @@ bash -c 'echo -e "/data/home /home none bind 0 0" >> /etc/fstab'
 mount -a
 setsebool -P use_nfs_home_dirs=on
 
-cp /data/system/ssh/ssh* /etc/ssh
+rsync /data/system/ssh/* /etc/ssh/
 service sshd restart
+
+cat /data/system/authorized_keys > /root/.ssh/authorized_keys
 
 chmod g-w /var/log
 useradd -c "Slurm scheduler" slurm
@@ -29,13 +36,10 @@ ls -l /etc/munge/munge.key
 systemctl daemon-reload
 systemctl enable munge
 systemctl start munge
-cp -f /data/system/slurm.conf /etc/slurm/slurm.conf
-ls -l /etc/slurm/slurm.conf
-chown slurm /etc/slurm/slurm.conf
+rm -f /etc/slurm/slurm.conf
+ln -s /data/system/slurm.conf /etc/slurm/slurm.conf
 systemctl enable slurmd
 systemctl start  slurmd
-yum -y install openmpi
-sed -i -- 's/azureuser ALL=(ALL) ALL/azureuser ALL=(ALL) NOPASSWD:ALL/g' /etc/sudoers.d/waagent
 # Install OpenMPI
 yum -y install openmpi3-devel
 # Fix broken tmpfilesd
