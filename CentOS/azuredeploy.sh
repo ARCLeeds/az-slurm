@@ -187,16 +187,6 @@ wget $TEMPLATE_BASE/ssh_config -O $SSHCONFIG
 
 # Prep shared files
 mkdir -m 711 /data/system
-mv /etc/aadpasswd /data/system/
-ln -s /data/system/aadpasswd /etc/aadpasswd
-
-cp -a /root/.ssh/id_ed25519.pub /data/system/authorized_keys
-cp -a /rpmbuild/RPMS /data/system
-cp /etc/munge/munge.key /data/system
-mv /etc/slurm/slurm.conf /data/system
-ln -s /data/system/slurm.conf /etc/slurm/slurm.conf
-mkdir /data/system/ssh
-cp /etc/ssh/ssh* /data/system/ssh
 
 # Install slurm on all nodes
 # Also push munge key and slurm.conf to them
@@ -249,5 +239,17 @@ gpgcheck=1
 gpgkey=https://packages.microsoft.com/keys/microsoft.asc" > /etc/yum.repos.d/azure-cli.repo'
 
 yum -y install azure-cli
+
+# Put all the files into the shared area
+mv /etc/aadpasswd /data/system/
+ln -s /data/system/aadpasswd /etc/aadpasswd
+
+cp -a /root/.ssh/id_ed25519.pub /data/system/authorized_keys
+cp -a /rpmbuild/RPMS /data/system
+cp /etc/munge/munge.key /data/system
+mv /etc/slurm/slurm.conf /data/system
+ln -s /data/system/slurm.conf /etc/slurm/slurm.conf
+mkdir /data/system/ssh
+cp /etc/ssh/s* /data/system/ssh/
 
 exit 0
