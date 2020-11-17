@@ -1,9 +1,8 @@
 #cloud-config
 
 bootcmd:
-  - yum install -y epel-release
+  - yum install -y epel-release nfs-utils
 packages:
-  - nfs-utils
   - openmpi3-devel
   - munge
 mounts:
