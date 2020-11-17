@@ -1,24 +1,21 @@
 #cloud-config
 
-runcmd:
-  - touch /tmp/runcmd
+bootcmd:
+  - yum install -y epel-release
 packages:
   - nfs-utils
-  - epel-release
   - openmpi3-devel
-runcmd:
-  - systemctl enable rpcbind
-  - systemctl start rpcbind
-  - setsebool -P use_nfs_home_dirs=on
+  - munge
 mounts:
   - [ "master:/data", /data, nfs intr 0 0 ]
   - [ /data/home, /home, none, bind, 0 0 ]
 runcmd:
+  - systemctl enable rpcbind
+  - systemctl start rpcbind
+  - setsebool -P use_nfs_home_dirs=on
   - cp /data/system/ssh/ssh* /etc/ssh
   - service sshd restart
-packages:
-  - munge
-runcmd:
+  - touch /tmp/runcmd
   - chmod g-w /var/log
   - useradd -c "Slurm scheduler" slurm
   - yum -y install /data/system/RPMS/x86_64/slurm-20.02.6-1.el7.x86_64.rpm  /data/system/RPMS/x86_64/slurm-example-configs-20.02.6-1.el7.x86_64.rpm /data/system/RPMS/x86_64/slurm-libpmi-20.02.6-1.el7.x86_64.rpm /data/system/RPMS/x86_64/slurm-pam_slurm-20.02.6-1.el7.x86_64.rpm /data/system/RPMS/x86_64/slurm-slurmd-20.02.6-1.el7.x86_64.rpm
