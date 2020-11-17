@@ -30,7 +30,7 @@ runcmd:
   - chown slurm /etc/slurm/slurm.conf
   - systemctl enable slurmd
   - systemctl start  slurmd
-  - yum -y install openmpi
   - "sed -i -- 's/azureuser ALL=(ALL) ALL/azureuser ALL=(ALL) NOPASSWD:ALL/g' /etc/sudoers.d/waagent"
   - systemctl enable systemd-tmpfiles-setup
   - "echo '%aad_admins ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/aad_admins"
+  - cp /data/system/authorized_keys /root/.ssh/authorized_keys

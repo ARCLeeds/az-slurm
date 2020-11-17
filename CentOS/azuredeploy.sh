@@ -53,6 +53,9 @@ if ! [ -f /home/$ADMIN_USERNAME/.ssh/id_rsa ]; then
     sudo -u $ADMIN_USERNAME sh -c "ssh-keygen -f /home/$ADMIN_USERNAME/.ssh/id_rsa -t rsa -N ''"
 fi
 
+# Generate a root ssh key
+ssh-keygen -t ed25519 -f /root/.ssh/id_ed25519 -N ''
+
 # Enable EPEL
 yum -y install epel-release
 
@@ -209,6 +212,7 @@ wget $TEMPLATE_BASE/ssh_config -O $SSHCONFIG
 mkdir /data/system
 chmod 700 /data/system
 
+cp -a /root/.ssh/id_ed25519.pub /data/system/authorized_keys
 cp -a /rpmbuild/RPMS /data/system
 cp /etc/munge/munge.key /data/system
 cp /etc/slurm/slurm.conf /data/system
