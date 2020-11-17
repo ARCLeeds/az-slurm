@@ -177,16 +177,6 @@ wget $TEMPLATE_BASE/slurm_conf.j2 -O $SLURMJ2
 cp -f $SLURMJ2 /home/$ADMIN_USERNAME/slurm_conf.j2
 chown $ADMIN_USERNAME /home/slurm_conf.j2
 
-# Download the scripts to create users
-READCSV=/tmp/user_read_csv_create_yml.py.$$
-wget $TEMPLATE_BASE/user_read_csv_create_yml.py -O $READCSV
-cp -f $READCSV /home/$ADMIN_USERNAME/user_read_csv_create_yml.py
-chown $ADMIN_USERNAME /home/$ADMIN_USERNAME/user_read_csv_create_yml.py
-CREATEUSERS=/tmp/create_users.yml.$$
-wget $TEMPLATE_BASE/create_users.yml -O $CREATEUSERS
-cp -f $CREATEUSERS /home/$ADMIN_USERNAME/create_users.yml
-chown $ADMIN_USERNAME /home/$ADMIN_USERNAME/create_users.yml
-
 # Download the SSH configuration files
 SSHDCONFIG=/tmp/sshd_config.$$
 wget $TEMPLATE_BASE/sshd_config -O $SSHDCONFIG
@@ -195,7 +185,7 @@ wget $TEMPLATE_BASE/ssh_config -O $SSHCONFIG
 
 # Prep shared files
 mkdir -m 711 /data/system
-touch /data/system/aadpasswd
+mv /etc/aadpasswd /data/system/
 ln -s /data/system/aadpasswd /etc/aadpasswd
 
 cp -a /root/.ssh/id_ed25519.pub /data/system/authorized_keys
