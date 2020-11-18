@@ -13,11 +13,11 @@ systemctl enable rpcbind
 systemctl start rpcbind
 
 mkdir /data
-bash -c 'echo -e "master:/data\t/data\tnfs\tintr\t0 0" >> /etc/fstab'
+bash -c 'echo -e "master:/data\t/data\tnfs\tdefaults\t0 0" >> /etc/fstab'
 mount /data
 
 # Rejig to provide NFS home directories
-bash -c 'echo -e "/data/home /home none bind 0 0" >> /etc/fstab'
+bash -c 'echo -e "/data/home /home none bind,_netdev 0 0" >> /etc/fstab'
 mount -a
 setsebool -P use_nfs_home_dirs=on
 
