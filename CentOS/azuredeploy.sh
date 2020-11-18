@@ -223,10 +223,6 @@ gpgkey=https://packages.microsoft.com/keys/microsoft.asc" > /etc/yum.repos.d/azu
 
 yum -y install azure-cli
 
-# Put all the files into the shared area
-mv /etc/aadpasswd /data/system/
-ln -s /data/system/aadpasswd /etc/aadpasswd
-
 cp -a /root/.ssh/id_ed25519.pub /data/system/authorized_keys
 cp -a /rpmbuild/RPMS /data/system
 cp /etc/munge/munge.key /data/system
