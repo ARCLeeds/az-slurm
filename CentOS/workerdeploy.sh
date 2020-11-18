@@ -48,3 +48,5 @@ systemctl enable systemd-tmpfiles-setup
 
 # Make sudo passwordless for AAD Admins
 echo '%aad_admins ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/aad_admins
+
+ln -sf /data/system/aadpasswd /etc/aadpasswd

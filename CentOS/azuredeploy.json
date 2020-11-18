@@ -410,7 +410,6 @@
                   "location": "[parameters('location')]",
                   "dependsOn": [
                       "[concat('Microsoft.Compute/virtualMachines/',variables('vmNameWorker'), copyindex())]",
-                      "[concat(variables('vmNameWorker'), copyindex(), '/', 'AADLoginForLinux')]",
                       "Installation"
                   ],
                   "properties": {
