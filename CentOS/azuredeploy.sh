@@ -139,8 +139,10 @@ rpmbuild -ta slurm-${SLURMVERSION}.tar.bz2
 
 # Generate the munge key
 echo "Generating munge key"
+umask 0077
 dd if=/dev/urandom bs=1 count=1024 > /etc/munge/munge.key
 chown munge:munge /etc/munge/munge.key
+umask 0022
 
 # Create the slurm user
 useradd -c "Slurm scheduler" slurm
