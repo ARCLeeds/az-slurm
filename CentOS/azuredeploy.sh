@@ -163,7 +163,8 @@ lastvm=`expr $NUM_OF_VM - 1`
 sed -i -- 's/__WORKERNODES__/'"$WORKER_NAME"'[0-'"$lastvm"']/g' $SLURMCONF
 cp -f $SLURMCONF /etc/slurm/slurm.conf
 chown slurm /etc/slurm/slurm.conf
-mkdir -o slurm -g slurm /var/spool/slurmd
+mkdir /var/spool/slurmd
+chown slurm:slurm /var/spool/slurmd
 systemctl daemon-reload
 systemctl enable munge
 systemctl start munge # Start munged
