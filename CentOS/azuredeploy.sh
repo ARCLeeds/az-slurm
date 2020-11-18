@@ -102,22 +102,26 @@ exportfs -a
 # Start building needed SSH files used for host authentication
 /usr/bin/ssh-keyscan master > /tmp/ssh-template
 cat /tmp/ssh-template >> $ssh_known_hosts
+sed "s/master/master,master.internal.cloudapp.net/" /tmp/ssh-template >> $ssh_known_hosts
 echo master > $shosts_equiv
-echo masterinternal.cloudapp.net >> $shosts_equiv
-
+echo master.internal.cloudapp.net >> $shosts_equiv
 
 install -m 600 -o $ADMIN_USERNAME -g $ADMIN_USERNAME /home/$ADMIN_USERNAME/.ssh/id_rsa.pub /home/$ADMIN_USERNAME/.ssh/authorized_keys
+
 # Loop through all worker nodes, update hosts file and copy ssh public key to it
 # The script make the assumption that the node is called %WORKER+<index> and have
 # static IP in sequence order
 i=0
 while [ $i -lt $NUM_OF_VM ]
 do
+   worker=$WORKER_NAME$i
    workerip=`expr $i + $WORKER_IP_START`
    echo 'I update host - '$WORKER_NAME$i
    sudo -u $ADMIN_USERNAME sh -c "sshpass -p '$ADMIN_PASSWORD' ssh-copy-id $WORKER_NAME$i"
    sed
    sed "s/master/$WORKER_IP_BASE$workerip/" /tmp/ssh-template >> $ssh_known_hosts
+   sed "s/master/$worker,$worker.internal.cloudapp.net/" /tmp/ssh-template >> $ssh_known_hosts
+   echo $worker >> $shosts_equiv
    echo $WORKER_NAME$i >> /etc/ansible/hosts
    i=`expr $i + 1`
 done
@@ -135,10 +139,8 @@ rpmbuild -ta slurm-${SLURMVERSION}.tar.bz2
 
 # Generate the munge key
 echo "Generating munge key"
-dd if=/dev/urandom bs=1 count=1024 >/tmp/munge.key
-chown munge:munge /tmp/munge.key
-chmod 600 /tmp/munge.key
-mv /tmp/munge.key /etc/munge/munge.key
+dd if=/dev/urandom bs=1 count=1024 > /etc/munge/munge.key
+chown munge:munge /etc/munge/munge.key
 
 # Create the slurm user
 useradd -c "Slurm scheduler" slurm
@@ -161,7 +163,7 @@ lastvm=`expr $NUM_OF_VM - 1`
 sed -i -- 's/__WORKERNODES__/'"$WORKER_NAME"'[0-'"$lastvm"']/g' $SLURMCONF
 cp -f $SLURMCONF /etc/slurm/slurm.conf
 chown slurm /etc/slurm/slurm.conf
-chmod o+w /var/spool # Write access for slurmctld log. Consider switch log file to another location
+mkdir -o slurm -g slurm /var/spool/slurmd
 systemctl daemon-reload
 systemctl enable munge
 systemctl start munge # Start munged
@@ -188,31 +190,9 @@ wget $TEMPLATE_BASE/ssh_config -O $SSHCONFIG
 # Prep shared files
 mkdir -m 711 /data/system
 
-# Install slurm on all nodes
-# Also push munge key and slurm.conf to them
-echo "Prepare the local copy of munge key" 
-
-mungekey=/tmp/munge.key.$$
-cp -f /etc/munge/munge.key $mungekey
-chown $ADMIN_USERNAME $mungekey
-
-echo "Start looping all workers" 
-i=0
-while [ $i -lt $NUM_OF_VM ]
-do
-   worker=$WORKER_NAME$i
-
-   # While we're looping through all the workers grab the ssh host keys for each to deploy ssh_known_hosts afterwards
-   sed "s/master/$worker,$worker.internal.cloudapp.net/" /tmp/ssh-template >> $ssh_known_hosts
-   echo $worker >> $shosts_equiv
-
-   i=`expr $i + 1`
-done
-rm -f $mungekey
-
 # Update slurm.conf with the number of CPUs detected on the compute nodes
-sudo -iu $ADMIN_USERNAME /usr/bin/ansible-playbook create_slurm_conf.yml
-scontrol reconfigure
+# sudo -iu $ADMIN_USERNAME /usr/bin/ansible-playbook create_slurm_conf.yml
+# scontrol reconfigure
 
 cp $ssh_known_hosts /etc/ssh/ssh_known_hosts
 cp $shosts_equiv /etc/ssh/shosts.equiv
