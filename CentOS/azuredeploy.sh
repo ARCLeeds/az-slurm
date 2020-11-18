@@ -10,6 +10,7 @@ SLURMVERSION=20.02.6
 # This script will install SLURM on a Linux cluster deployed on a set of Azure VMs
 
 # Basic info
+env
 date
 whoami
 echo $@
@@ -147,6 +148,41 @@ umask 0022
 # Create the slurm user
 useradd -c "Slurm scheduler" slurm
 
+cat > /home/slurm/slurm-resume <<'EOB'
+#!/bin/bash
+
+exec >> /home/slurm/slurm.log
+
+az login --identity --output=none
+
+HOST=$1
+
+echo $HOST Starting
+az vm start --name $HOST --resource-group UOL_IT_RC_SLURM_TEST
+echo $HOST Started
+
+echo -n $HOST Probing
+for i in {1..1000}; do
+  echo -n .
+  ssh -o ConnectTimeout=5 $HOST 'netstat -nl|grep  6818 >& /dev/null' && echo Done && exit 0
+  sleep 1
+done
+EOB
+
+cat > /home/slurm/slurm-suspend <<'EOB'
+#!/bin/bash
+
+exec >> /home/slurm/slurm.log
+
+az login --identity --output=none
+
+echo $1 Deallocating
+az vm deallocate --name $1 --resource-group UOL_IT_RC_SLURM_TEST
+echo $1 Deallocated
+EOB
+
+chmod 755 /home/slurm/slurm-suspend /home/slurm/slurm-resume
+
 # Install the packages needed on the master
 yum -y install /rpmbuild/RPMS/x86_64/slurm-${SLURMVERSION}-1.el7.x86_64.rpm \
 /rpmbuild/RPMS/x86_64/slurm-contribs-${SLURMVERSION}-1.el7.x86_64.rpm \
@@ -230,5 +266,9 @@ mv /etc/slurm/slurm.conf /data/system
 ln -s /data/system/slurm.conf /etc/slurm/slurm.conf
 mkdir /data/system/ssh
 cp -a /etc/ssh/s* /data/system/ssh/
+
+cat > /etc/cron.d/sync-aadpasswd <<EOB
+* * * * * root rsync -a /etc/aadpasswd /data/system/aadpasswd
+EOB
 
 exit 0
