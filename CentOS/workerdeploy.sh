@@ -21,7 +21,7 @@ bash -c 'echo -e "/data/home /home none bind 0 0" >> /etc/fstab'
 mount -a
 setsebool -P use_nfs_home_dirs=on
 
-rsync /data/system/ssh/* /etc/ssh/
+rsync -a /data/system/ssh/* /etc/ssh/
 service sshd restart
 
 mkdir -p /root/.ssh
