@@ -106,6 +106,7 @@ cat /tmp/ssh-template >> $ssh_known_hosts
 sed "s/master/master,master.internal.cloudapp.net/" /tmp/ssh-template >> $ssh_known_hosts
 echo master > $shosts_equiv
 echo master.internal.cloudapp.net >> $shosts_equiv
+echo master.internal.cloudapp.net,master 10.0.0.254 >> /etc/hosts
 
 install -m 600 -o $ADMIN_USERNAME -g $ADMIN_USERNAME /home/$ADMIN_USERNAME/.ssh/id_rsa.pub /home/$ADMIN_USERNAME/.ssh/authorized_keys
 
@@ -124,6 +125,7 @@ do
    sed "s/master/$worker,$worker.internal.cloudapp.net/" /tmp/ssh-template >> $ssh_known_hosts
    echo $worker >> $shosts_equiv
    echo $WORKER_NAME$i >> /etc/ansible/hosts
+   echo $WORKER_IP_BASE$workerip $worker.internal.cloudapp.net,$worker >> /etc/hosts
    i=`expr $i + 1`
 done
 
@@ -153,20 +155,28 @@ cat > /home/slurm/slurm-resume <<'EOB'
 
 exec >> /home/slurm/slurm.log
 
+echo Called: $0 $*
+
 az login --identity --output=none
 
-HOST=$1
+HOSTS=$(scontrol show hostnames $1)
 
-echo $HOST Starting
-az vm start --name $HOST --resource-group UOL_IT_RC_SLURM_TEST
-echo $HOST Started
-
-echo -n $HOST Probing
-for i in {1..1000}; do
-  echo -n .
-  ssh -o ConnectTimeout=5 $HOST 'netstat -nl|grep  6818 >& /dev/null' && echo Done && exit 0
-  sleep 1
+for host in $HOSTS;do
+  echo $host Starting
+  az vm start --name $host --resource-group UOL_IT_RC_SLURM_TEST --no-wait
+  echo $host Started
 done
+
+for host in $HOSTS;do
+  echo -n $host Probing
+  for i in {1..1000}; do
+    echo -n .
+    ssh -o ConnectTimeout=5 $host 'netstat -nl|grep  6818 >& /dev/null' && echo Done && break
+    sleep 1
+  done
+done
+
+exit 0
 EOB
 
 cat > /home/slurm/slurm-suspend <<'EOB'
@@ -174,11 +184,17 @@ cat > /home/slurm/slurm-suspend <<'EOB'
 
 exec >> /home/slurm/slurm.log
 
+echo Called: $0 $*
+
 az login --identity --output=none
 
-echo $1 Deallocating
-az vm deallocate --name $1 --resource-group UOL_IT_RC_SLURM_TEST
-echo $1 Deallocated
+HOSTS=$(scontrol show hostnames $1)
+
+for host in $HOSTS;do
+  echo $host Deallocating
+  az vm deallocate --name $host --resource-group UOL_IT_RC_SLURM_TEST
+  echo $host Deallocated
+done
 EOB
 
 chmod 755 /home/slurm/slurm-suspend /home/slurm/slurm-resume
@@ -259,6 +275,7 @@ gpgkey=https://packages.microsoft.com/keys/microsoft.asc" > /etc/yum.repos.d/azu
 
 yum -y install azure-cli
 
+cp /etc/hosts /data/system/
 cp -a /root/.ssh/id_ed25519.pub /data/system/authorized_keys
 cp -a /rpmbuild/RPMS /data/system
 cp /etc/munge/munge.key /data/system
