@@ -111,7 +111,6 @@
       "headImageOffer": "CentOS",
       "centOSVersion": "7_8-gen2",
       "publicIPAddressName": "publicip",
-      "availabilitySetName": "avSet",
       "vmNameMaster": "master",
       "vmNameWorker": "worker",
       "nicNameMaster": "nic",
@@ -138,17 +137,6 @@
       "installationCLI": "[concat('sh azuredeploy.sh ', variables('vmNameMaster'), ' ', variables('networkSettings').statics.master, ' ', variables('vmNameWorker'), ' ', variables('networkSettings').statics.workerRange.base, ' ', variables('networkSettings').statics.workerRange.start, ' ', parameters('scaleNumber'), ' ', parameters('adminUsername'), ' ', parameters('adminPassword'), ' ', parameters('_artifactsLocation'))]"
   },
   "resources": [
-      {
-          "type": "Microsoft.Compute/availabilitySets",
-          "name": "[variables('availabilitySetName')]",
-          "apiVersion": "2016-04-30-preview",
-          "location": "[resourceGroup().location]",
-          "properties": {
-            "platformFaultDomainCount": 2,
-            "platformUpdateDomainCount": 2,
-            "managed": true
-          }
-      },
       {
           "apiVersion": "2016-09-01",
           "type": "Microsoft.Network/virtualNetworks",
@@ -346,17 +334,13 @@
             "type": "SystemAssigned"
 	  },
           "dependsOn": [
-              "nicLoop",
-              "[concat('Microsoft.Compute/availabilitySets/', variables('availabilitySetName'))]"
+              "nicLoop"
           ],
           "copy": {
               "name": "foo",
               "count": "[parameters('scaleNumber')]"
           },
           "properties": {
-              "availabilitySet": {
-                "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('availabilitySetName'))]"
-              },
               "hardwareProfile": {
                   "vmSize": "[parameters('workerNodeSize')]"
               },
