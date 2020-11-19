@@ -122,7 +122,7 @@ cat /tmp/ssh-template >> $ssh_known_hosts
 sed "s/master/master,master.internal.cloudapp.net/" /tmp/ssh-template >> $ssh_known_hosts
 echo master > $shosts_equiv
 echo master.internal.cloudapp.net >> $shosts_equiv
-echo master.internal.cloudapp.net,master 10.0.0.254 >> /etc/hosts
+echo master.internal.cloudapp.net master 10.0.0.254 >> /etc/hosts
 
 install -m 600 -o $ADMIN_USERNAME -g $ADMIN_USERNAME /home/$ADMIN_USERNAME/.ssh/id_rsa.pub /home/$ADMIN_USERNAME/.ssh/authorized_keys
 
@@ -138,7 +138,7 @@ do
    sudo -u $ADMIN_USERNAME sh -c "sshpass -p '$ADMIN_PASSWORD' ssh-copy-id $WORKER_NAME$i"
    sed
    sed "s/master/$WORKER_IP_BASE$workerip/" /tmp/ssh-template >> $ssh_known_hosts
-   sed "s/master/$worker,$worker.internal.cloudapp.net/" /tmp/ssh-template >> $ssh_known_hosts
+   sed "s/master/$worker $worker.internal.cloudapp.net/" /tmp/ssh-template >> $ssh_known_hosts
    echo $worker >> $shosts_equiv
    echo $WORKER_NAME$i >> /etc/ansible/hosts
    echo $WORKER_IP_BASE$workerip $worker.internal.cloudapp.net,$worker >> /etc/hosts
