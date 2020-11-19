@@ -16,8 +16,8 @@ whoami
 echo $@
 
 # Usage
-if [ "$#" -ne 12 ]; then
-  echo "Usage: $0 MASTER_NAME MASTER_IP WORKER_NAME WORKER_IP_BASE WORKER_IP_START NUM_OF_VM ADMIN_USERNAME ADMIN_PASSWORD TEMPLATE_BASE SUBSCRIPTION_ID RG_NAME SPNAME"
+if [ "$#" -ne 13 ]; then
+  echo "Usage: $0 MASTER_NAME MASTER_IP WORKER_NAME WORKER_IP_BASE WORKER_IP_START NUM_OF_VM ADMIN_USERNAME ADMIN_PASSWORD TEMPLATE_BASE SUBSCRIPTION_ID RG_NAME SPNAME STENANT_ID"
   exit 1
 fi
 
@@ -37,6 +37,7 @@ TEMPLATE_BASE=$9
 SUBSCRIPTION_ID=${10}
 RG_NAME=${11}
 SPNAME=${12}
+TENANT_ID=${13}
 
 ssh_known_hosts=/tmp/ssh_known_hosts.$$
 shosts_equiv=/tmp/shosts.equiv.$$
@@ -51,8 +52,6 @@ gpgcheck=1
 gpgkey=https://packages.microsoft.com/keys/microsoft.asc" > /etc/yum.repos.d/azure-cli.repo'
 
 yum -y install azure-cli
-
-TENANTID=$(az account  list --output=tsv|awk '{print $2}')
 
 # Update sudo rule for azureuser
 sed -i -- 's/azureuser ALL=(ALL) ALL/azureuser ALL=(ALL) NOPASSWD:ALL/g' /etc/sudoers.d/waagent
@@ -215,7 +214,7 @@ EOB
 
 cat > /home/slurm/az-login <<EOB
 #!/bin/bash
-az login --service-principal -u $SPNAME -p /home/slurm/cert.pem --tenant $TENANTID
+az login --service-principal -u $SPNAME -p /home/slurm/cert.pem --tenant $TENANT_ID
 EOB
 
 chmod 755 /home/slurm/slurm-suspend /home/slurm/slurm-resume /home/slurm/az-login
