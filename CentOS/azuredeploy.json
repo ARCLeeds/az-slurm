@@ -2,10 +2,16 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "servicePrincipalName": {
+    "servicePrincipalID": {
       "type": "string",
       "metadata": {
-        "description": "Name of SPN used"
+        "description": "ServicePrincipal ID"
+      }
+    },
+    "servicePrincipalSecret": {
+      "type": "string",
+      "metadata": {
+        "description": "ServicePrincipal Secret"
       }
     },
     "notActions": {
@@ -166,7 +172,7 @@
           }
       },
       "subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets/', variables('networkSettings').virtualNetworkName, variables('networkSettings').subnet.dse.name)]",
-      "installationCLI": "[concat('sh azuredeploy.sh ', variables('vmNameMaster'), ' ', variables('networkSettings').statics.master, ' ', variables('vmNameWorker'), ' ', variables('networkSettings').statics.workerRange.base, ' ', variables('networkSettings').statics.workerRange.start, ' ', parameters('scaleNumber'), ' ', parameters('adminUsername'), ' ', parameters('adminPassword'), ' ', parameters('_artifactsLocation'), ' ', subscription().subscriptionId, ' ', resourceGroup().name, ' ', parameters('servicePrincipalName'), ' ', subscription().tenantId)]"
+      "installationCLI": "[concat('sh azuredeploy.sh ', variables('vmNameMaster'), ' ', variables('networkSettings').statics.master, ' ', variables('vmNameWorker'), ' ', variables('networkSettings').statics.workerRange.base, ' ', variables('networkSettings').statics.workerRange.start, ' ', parameters('scaleNumber'), ' ', parameters('adminUsername'), ' ', parameters('adminPassword'), ' ', parameters('_artifactsLocation'), ' ', subscription().subscriptionId, ' ', resourceGroup().name, ' ', subscription().tenantId, ' ', parameters('servicePrincipalID'), ' ', parameters('servicePrincipalSecret'))]"
   },
   "resources": [
       {
