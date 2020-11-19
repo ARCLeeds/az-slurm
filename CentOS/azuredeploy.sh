@@ -16,7 +16,7 @@ whoami
 echo $@
 
 # Usage
-if [ "$#" -ne 14 ]; then
+if [ "$#" -ne 13 ]; then
   echo "$#: $0 $*"
   echo "Usage: $0 MASTER_NAME MASTER_IP WORKER_NAME WORKER_IP_BASE WORKER_IP_START NUM_OF_VM ADMIN_USERNAME ADMIN_PASSWORD TEMPLATE_BASE RG_NAME TENANT_ID SP_ID SP_SECRET"
   exit 1
