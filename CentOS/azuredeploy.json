@@ -378,13 +378,17 @@
             "type": "SystemAssigned"
           },
           "dependsOn": [
-              "nicLoop"
+              "nicLoop",
+              "[parameters('ppgName')]"
           ],
           "copy": {
               "name": "foo",
               "count": "[parameters('scaleNumber')]"
           },
           "properties": {
+              "proximityPlacementGroup": {
+                  "id": "[resourceId('Microsoft.Compute/proximityPlacementGroups', parameters('ppgName'))]"
+              },
               "hardwareProfile": {
                   "vmSize": "[parameters('workerNodeSize')]"
               },
@@ -418,6 +422,18 @@
               }
           },
           "resources": [
+              {
+                  "type": "Microsoft.Authorization/roleAssignments",
+                  "apiVersion": "2020-04-01-preview",
+                  "name": "[concat(variables('vmNameWorker'), copyindex(), '/', 'role')",
+                  "properties": {
+                      "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'd73bb868-a0df-4d4d-bd69-98a00b01fccb')]",
+                      "principalId": "[parameters('servicePrincipalID')]"
+                  },
+                  "dependsOn": [
+                          "[concat('Microsoft.Compute/virtualMachines/',variables('vmNameWorker'), copyindex())]"
+                  ]
+              },
               {
                   "name": "[concat(variables('vmNameWorker'), copyindex(), '/', 'AADLoginForLinux')]",
                   "type": "Microsoft.Compute/virtualMachines/extensions",
