@@ -16,9 +16,9 @@ whoami
 echo $@
 
 # Usage
-if [ "$#" -ne 14 ]; then
+if [ "$#" -ne 13 ]; then
   echo "$#: $0 $*"
-  echo "Usage: $0 MASTER_NAME MASTER_IP WORKER_NAME WORKER_IP_BASE WORKER_IP_START NUM_OF_VM ADMIN_USERNAME ADMIN_PASSWORD TEMPLATE_BASE SUBSCRIPTION_ID RG_NAME TENANT_ID SPN_ID SPN_SECRET"
+  echo "Usage: $0 MASTER_NAME MASTER_IP WORKER_NAME WORKER_IP_BASE WORKER_IP_START NUM_OF_VM ADMIN_USERNAME ADMIN_PASSWORD TEMPLATE_BASE SUBSCRIPTION_ID RG_NAME TENANT_ID SP_ID SP_SECRET"
   exit 1
 fi
 
@@ -38,8 +38,8 @@ TEMPLATE_BASE=$9
 SUBSCRIPTION_ID=${10}
 RG_NAME=${11}
 TENANT_ID=${12}
-SPN_ID=${13}
-SPN_SECRET=${14}
+SP_ID=${13}
+SP_SECRET=${14}
 
 ssh_known_hosts=/tmp/ssh_known_hosts.$$
 shosts_equiv=/tmp/shosts.equiv.$$
@@ -216,7 +216,7 @@ EOB
 
 cat > /home/slurm/az-login <<EOB
 #!/bin/bash
-az login --service-principal -u $SP_ID -p /home/slurm/cert.pem --tenant $TENANT_ID
+az login --service-principal -u $SP_ID -p $SP_SECRET --tenant $TENANT_ID
 EOB
 
 chmod 755 /home/slurm/slurm-suspend /home/slurm/slurm-resume /home/slurm/az-login
