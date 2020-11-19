@@ -1,7 +1,7 @@
 #!/bin/sh
 
 set -x
-exec >& /tmp/azuredeploy.log.$$
+exec >& /root/azuredeploy.log.$$
 
 SLURMVERSION=20.02.6
 
