@@ -8,6 +8,12 @@
         "description": "ServicePrincipal ID"
       }
     },
+    "servicePrincipalObjectID": {
+      "type": "string",
+      "metadata": {
+        "description": "ServicePrincipal Object ID"
+      }
+    },
     "servicePrincipalSecret": {
       "type": "string",
       "metadata": {
@@ -423,12 +429,12 @@
       },
       "resources": [
         {
-          "type": "Microsoft.Authorization/roleAssignments",
-          "apiVersion": "2020-04-01-preview",
-          "name": "[concat(variables('vmNameWorker'), copyindex(), '/', 'role')",
+          "apiVersion": "2014-10-01-preview",
+          "name": "[concat(variables('vmNameWorker'), copyindex(), '/Microsoft.Authorization/71121498-465D-465A-AA4A-861DC8116095')]",
+          "type": "Microsoft.Compute/virtualMachines/providers/roleAssignments",
           "properties": {
-            "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'd73bb868-a0df-4d4d-bd69-98a00b01fccb')]",
-            "principalId": "[parameters('servicePrincipalID')]"
+            "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '9980e02c-c2be-4d73-94e8-173b1dc7cf3c')]",
+            "principalId": "[parameters('servicePrincipalObjectID')]"
           },
           "dependsOn": [
             "[concat('Microsoft.Compute/virtualMachines/',variables('vmNameWorker'), copyindex())]"
