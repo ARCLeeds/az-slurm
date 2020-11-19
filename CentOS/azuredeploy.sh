@@ -16,8 +16,8 @@ whoami
 echo $@
 
 # Usage
-if [ "$#" -ne 9 ]; then
-  echo "Usage: $0 MASTER_NAME MASTER_IP WORKER_NAME WORKER_IP_BASE WORKER_IP_START NUM_OF_VM ADMIN_USERNAME ADMIN_PASSWORD TEMPLATE_BASE"
+if [ "$#" -ne 12 ]; then
+  echo "Usage: $0 MASTER_NAME MASTER_IP WORKER_NAME WORKER_IP_BASE WORKER_IP_START NUM_OF_VM ADMIN_USERNAME ADMIN_PASSWORD TEMPLATE_BASE SUBSCRIPTION_ID RG_NAME SPNAME"
   exit 1
 fi
 
@@ -34,9 +34,25 @@ NUM_OF_VM=$6
 ADMIN_USERNAME=$7
 ADMIN_PASSWORD=$8
 TEMPLATE_BASE=$9
+SUBSCRIPTION_ID=${10}
+RG_NAME=${11}
+SPNAME=${12}
 
 ssh_known_hosts=/tmp/ssh_known_hosts.$$
 shosts_equiv=/tmp/shosts.equiv.$$
+
+# Install AZ CLI
+rpm --import https://packages.microsoft.com/keys/microsoft.asc
+sh -c 'echo -e "[azure-cli]
+name=Azure CLI
+baseurl=https://packages.microsoft.com/yumrepos/azure-cli
+enabled=1
+gpgcheck=1
+gpgkey=https://packages.microsoft.com/keys/microsoft.asc" > /etc/yum.repos.d/azure-cli.repo'
+
+yum -y install azure-cli
+
+TENANTID=$(az account  list --output=tsv|awk '{print $2}')
 
 # Update sudo rule for azureuser
 sed -i -- 's/azureuser ALL=(ALL) ALL/azureuser ALL=(ALL) NOPASSWD:ALL/g' /etc/sudoers.d/waagent
@@ -150,28 +166,28 @@ umask 0022
 # Create the slurm user
 useradd -c "Slurm scheduler" slurm
 
-cat > /home/slurm/slurm-resume <<'EOB'
+cat > test.out <<EOB
 #!/bin/bash
 
 exec >> /home/slurm/slurm.log
 
-echo Called: $0 $*
+echo Called: \$0 \$*
 
-az login --identity --output=none
+~/az-login
 
-HOSTS=$(scontrol show hostnames $1)
+HOSTS=\$(scontrol show hostnames \$1)
 
-for host in $HOSTS;do
-  echo $host Starting
-  az vm start --name $host --resource-group UOL_IT_RC_SLURM_TEST --no-wait
-  echo $host Started
+for host in \$HOSTS;do
+  echo \$host Starting
+  az vm start --name \$host --resource-group $RG_NAME --no-wait
+  echo \$host Started
 done
 
-for host in $HOSTS;do
-  echo -n $host Probing
+for host in \$HOSTS;do
+  echo -n \$host Probing
   for i in {1..1000}; do
     echo -n .
-    ssh -o ConnectTimeout=5 $host 'netstat -nl|grep  6818 >& /dev/null' && echo Done && break
+    ssh -o ConnectTimeout=5 \$host 'netstat -nl|grep 6818 >& /dev/null' && echo Done && break
     sleep 1
   done
 done
@@ -179,25 +195,30 @@ done
 exit 0
 EOB
 
-cat > /home/slurm/slurm-suspend <<'EOB'
+cat > /home/slurm/slurm-suspend <<EOB
 #!/bin/bash
 
 exec >> /home/slurm/slurm.log
 
-echo Called: $0 $*
+echo Called: \$0 \$*
 
-az login --identity --output=none
+~/az-login
 
-HOSTS=$(scontrol show hostnames $1)
+HOSTS=\$(scontrol show hostnames \$1)
 
-for host in $HOSTS;do
-  echo $host Deallocating
-  az vm deallocate --name $host --resource-group UOL_IT_RC_SLURM_TEST
-  echo $host Deallocated
+for host in \$HOSTS;do
+  echo \$host Deallocating
+  az vm deallocate --name \$host --resource-group $RG_NAME
+  echo \$host Deallocated
 done
 EOB
 
-chmod 755 /home/slurm/slurm-suspend /home/slurm/slurm-resume
+cat > /home/slurm/az-login <<EOB
+#!/bin/bash
+az login --service-principal -u $SPNAME -p /home/slurm/cert.pem --tenant $TENANTID
+EOB
+
+chmod 755 /home/slurm/slurm-suspend /home/slurm/slurm-resume /home/slurm/az-login
 
 # Install the packages needed on the master
 yum -y install /rpmbuild/RPMS/x86_64/slurm-${SLURMVERSION}-1.el7.x86_64.rpm \
@@ -263,17 +284,6 @@ sed -i 's/SELINUX=enforcing/SELINUX=permissive/' /etc/sysconfig/selinux
 
 # Make sudo passwordless for AAD Admins
 echo '%aad_admins ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/aad_admins
-
-# Install AZ CLI
-rpm --import https://packages.microsoft.com/keys/microsoft.asc
-sh -c 'echo -e "[azure-cli]
-name=Azure CLI
-baseurl=https://packages.microsoft.com/yumrepos/azure-cli
-enabled=1
-gpgcheck=1
-gpgkey=https://packages.microsoft.com/keys/microsoft.asc" > /etc/yum.repos.d/azure-cli.repo'
-
-yum -y install azure-cli
 
 cp /etc/hosts /data/system/
 cp -a /root/.ssh/id_ed25519.pub /data/system/authorized_keys

@@ -6,7 +6,7 @@
       "value": "Standard_B2s"
     },
     "workerNodeSize": {
-      "value": "Standard_DS2_v2"
+      "value": "Standard_D2s_v3"
     },
     "workerImageOffer": {
       "value": "CentOS"
@@ -19,6 +19,9 @@
     },
     "scaleNumber": {
       "value": 1
+    },
+    "servicePrincipalName": {
+      "value": "http://RCSlurmTest2"
     }
   }
 }

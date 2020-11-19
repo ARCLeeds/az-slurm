@@ -2,6 +2,33 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
+    "servicePrincipalName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of SPN used"
+      }
+    },
+    "notActions": {
+      "type": "array",
+      "defaultValue": [],
+      "metadata": {
+        "description": "Array of notActions for the roleDefinition"
+      }
+    },
+    "roleName": {
+      "type": "string",
+      "defaultValue": "Custom Role - RG Reader",
+      "metadata": {
+        "description": "Friendly name of the role definition"
+      }
+    },
+    "roleDescription": {
+      "type": "string",
+      "defaultValue": "Subscription Level Deployment of a Role Definition",
+      "metadata": {
+        "description": "Detailed description of the role definition"
+      }
+    },
       "adminUsername": {
           "type": "string",
           "defaultValue": "azureuser",
@@ -42,8 +69,9 @@
               "Standard_HB60rs",
               "Standard_D2_v2",
               "Standard_DS2_v2",
-              "Standard_DS5_v2"
-
+              "Standard_DS5_v2",
+              "Standard_D2s_v3",
+              "Standard_D16s_v3"
           ],
           "metadata": {
               "description": "Size of the worker nodes."
@@ -97,6 +125,10 @@
           },
           "defaultValue": ""
       },
+      "ppgName": {
+        "type": "string",
+        "defaultValue": "ppg"
+      },
       "location": {
           "type": "string",
           "defaultValue": "[resourceGroup().location]",
@@ -134,7 +166,7 @@
           }
       },
       "subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets/', variables('networkSettings').virtualNetworkName, variables('networkSettings').subnet.dse.name)]",
-      "installationCLI": "[concat('sh azuredeploy.sh ', variables('vmNameMaster'), ' ', variables('networkSettings').statics.master, ' ', variables('vmNameWorker'), ' ', variables('networkSettings').statics.workerRange.base, ' ', variables('networkSettings').statics.workerRange.start, ' ', parameters('scaleNumber'), ' ', parameters('adminUsername'), ' ', parameters('adminPassword'), ' ', parameters('_artifactsLocation'))]"
+      "installationCLI": "[concat('sh azuredeploy.sh ', variables('vmNameMaster'), ' ', variables('networkSettings').statics.master, ' ', variables('vmNameWorker'), ' ', variables('networkSettings').statics.workerRange.base, ' ', variables('networkSettings').statics.workerRange.start, ' ', parameters('scaleNumber'), ' ', parameters('adminUsername'), ' ', parameters('adminPassword'), ' ', parameters('_artifactsLocation'), subscription().subscriptionId, resourceGroup().name, parameters('servicePrincipalName'))]"
   },
   "resources": [
       {
@@ -199,12 +231,18 @@
       },
       {
           "apiVersion": "2019-03-01",
+          "type": "Microsoft.Compute/proximityPlacementGroups",
+          "name": "[parameters('ppgName')]",
+          "location": "[parameters('location')]"
+      },
+      {
+          "apiVersion": "2019-03-01",
           "type": "Microsoft.Compute/virtualMachines",
           "name": "[variables('vmNameMaster')]",
           "location": "[parameters('location')]",
           "identity": {
             "type": "SystemAssigned"
-	  },
+          },
           "dependsOn": [
               "[variables('nicNameMaster')]"
           ],
@@ -260,19 +298,19 @@
           "resources": [
               {
                   "name": "[concat(variables('vmNameMaster'),'/', 'AADLoginForLinux')]",
-		  "type": "Microsoft.Compute/virtualMachines/extensions",
-		  "apiVersion": "2017-12-01",
-		  "location": "[parameters('location')]",
-		  "properties": {
-			  "publisher": "Microsoft.Azure.ActiveDirectory.LinuxSSH",
-			  "type": "AADLoginForLinux",
-			  "typeHandlerVersion": "1.0",
-			  "autoUpgradeMinorVersion": true
-		  },
-		  "dependsOn": [
-			  "[concat('Microsoft.Compute/virtualMachines/',variables('vmNameMaster'))]"
-		  ]
-	      },
+                  "type": "Microsoft.Compute/virtualMachines/extensions",
+                  "apiVersion": "2017-12-01",
+                  "location": "[parameters('location')]",
+                  "properties": {
+                          "publisher": "Microsoft.Azure.ActiveDirectory.LinuxSSH",
+                          "type": "AADLoginForLinux",
+                          "typeHandlerVersion": "1.0",
+                          "autoUpgradeMinorVersion": true
+                  },
+                  "dependsOn": [
+                          "[concat('Microsoft.Compute/virtualMachines/',variables('vmNameMaster'))]"
+                  ]
+              },
               {
                   "apiVersion": "2016-03-30",
                   "type": "extensions",
@@ -332,7 +370,7 @@
           "location": "[parameters('location')]",
           "identity": {
             "type": "SystemAssigned"
-	  },
+          },
           "dependsOn": [
               "nicLoop"
           ],
@@ -376,19 +414,19 @@
           "resources": [
               {
                   "name": "[concat(variables('vmNameWorker'), copyindex(), '/', 'AADLoginForLinux')]",
-		  "type": "Microsoft.Compute/virtualMachines/extensions",
-		  "apiVersion": "2017-12-01",
-		  "location": "[parameters('location')]",
-		  "properties": {
-			  "publisher": "Microsoft.Azure.ActiveDirectory.LinuxSSH",
-			  "type": "AADLoginForLinux",
-			  "typeHandlerVersion": "1.0",
-			  "autoUpgradeMinorVersion": true
-		  },
-		  "dependsOn": [
-			  "[concat('Microsoft.Compute/virtualMachines/',variables('vmNameWorker'), copyindex())]"
-		  ]
-	      },
+                  "type": "Microsoft.Compute/virtualMachines/extensions",
+                  "apiVersion": "2017-12-01",
+                  "location": "[parameters('location')]",
+                  "properties": {
+                          "publisher": "Microsoft.Azure.ActiveDirectory.LinuxSSH",
+                          "type": "AADLoginForLinux",
+                          "typeHandlerVersion": "1.0",
+                          "autoUpgradeMinorVersion": true
+                  },
+                  "dependsOn": [
+                          "[concat('Microsoft.Compute/virtualMachines/',variables('vmNameWorker'), copyindex())]"
+                  ]
+              },
               {
                   "apiVersion": "2016-03-30",
                   "type": "extensions",
@@ -413,7 +451,7 @@
                       }
                   }
               }
-	  ]
+          ]
       }
   ],
   "outputs": {
