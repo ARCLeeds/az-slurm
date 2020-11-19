@@ -166,7 +166,7 @@ umask 0022
 # Create the slurm user
 useradd -c "Slurm scheduler" slurm
 
-cat > test.out <<EOB
+cat > /home/slurm/slurm-resume <<EOB
 #!/bin/bash
 
 exec >> /home/slurm/slurm.log
