@@ -1,5 +1,5 @@
 {
-  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
     "userGroupID": {
@@ -101,6 +101,13 @@
         "description": "Size of the worker nodes."
       }
     },
+    "workerNodeCPUCount": {
+      "type": "int",
+      "defaultValue": 16,
+      "metadata": {
+        "description": "Number of CPU cores in a worker node."
+      }
+    },
     "workerImageOffer": {
       "type": "string",
       "defaultValue": "CentOS-HPC",
@@ -190,11 +197,11 @@
       }
     },
     "subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets/', variables('networkSettings').virtualNetworkName, variables('networkSettings').subnet.dse.name)]",
-    "installationCLI": "[concat('sh azuredeploy.sh ', variables('vmNameMaster'), ' ', variables('networkSettings').statics.master, ' ', variables('vmNameWorker'), ' ', variables('networkSettings').statics.workerRange.base, ' ', variables('networkSettings').statics.workerRange.start, ' ', parameters('scaleNumber'), ' ', parameters('adminUsername'), ' ', parameters('adminPassword'), ' ', parameters('_artifactsLocation'), ' ', resourceGroup().name, ' ', subscription().tenantId, ' ', parameters('servicePrincipalID'), ' ', parameters('servicePrincipalSecret'))]"
+    "installationCLI": "[concat('sh azuredeploy.sh ', variables('vmNameMaster'), ' ', variables('networkSettings').statics.master, ' ', variables('vmNameWorker'), ' ', variables('networkSettings').statics.workerRange.base, ' ', variables('networkSettings').statics.workerRange.start, ' ', parameters('scaleNumber'), ' ', parameters('adminUsername'), ' ', parameters('adminPassword'), ' ', parameters('_artifactsLocation'), ' ', resourceGroup().name, ' ', subscription().tenantId, ' ', parameters('servicePrincipalID'), ' ', parameters('servicePrincipalSecret'), ' ', parameters('workerNodeCPUCount'))]"
   },
   "resources": [
     {
-      "apiVersion": "2016-09-01",
+      "apiVersion": "2020-06-01",
       "type": "Microsoft.Network/virtualNetworks",
       "name": "[variables('networkSettings').virtualNetworkName]",
       "location": "[parameters('location')]",
@@ -216,7 +223,7 @@
     },
     {
       "type": "Microsoft.Network/publicIPAddresses",
-      "apiVersion": "2016-09-01",
+      "apiVersion": "2020-06-01",
       "name": "[variables('publicIPAddressName')]",
       "location": "[parameters('location')]",
       "properties": {
@@ -227,7 +234,7 @@
       }
     },
     {
-      "apiVersion": "2016-09-01",
+      "apiVersion": "2020-06-01",
       "type": "Microsoft.Network/networkInterfaces",
       "name": "[variables('nicNameMaster')]",
       "location": "[parameters('location')]",
@@ -254,13 +261,13 @@
       }
     },
     {
-      "apiVersion": "2019-03-01",
+      "apiVersion": "2020-06-01",
       "type": "Microsoft.Compute/proximityPlacementGroups",
       "name": "[parameters('ppgName')]",
       "location": "[parameters('location')]"
     },
     {
-      "apiVersion": "2019-03-01",
+      "apiVersion": "2020-06-01",
       "type": "Microsoft.Compute/virtualMachines",
       "name": "[variables('vmNameMaster')]",
       "location": "[parameters('location')]",
@@ -321,7 +328,7 @@
       },
       "resources": [
         {
-          "apiVersion": "2018-01-01-preview",
+          "apiVersion": "2020-04-01-preview",
           "name": "[concat(variables('vmNameMaster'), '/Microsoft.Authorization/', guid(resourceGroup().id, variables('vmNameMaster'), 'userGroup'))]",
           "type": "Microsoft.Compute/virtualMachines/providers/roleAssignments",
           "properties": {
@@ -333,7 +340,7 @@
           ]
         },
         {
-          "apiVersion": "2018-01-01-preview",
+          "apiVersion": "2020-04-01-preview",
           "name": "[concat(variables('vmNameMaster'), '/Microsoft.Authorization/', guid(resourceGroup().id, variables('vmNameMaster'), 'adminGroup'))]",
           "type": "Microsoft.Compute/virtualMachines/providers/roleAssignments",
           "properties": {
@@ -347,7 +354,7 @@
         {
           "name": "[concat(variables('vmNameMaster'),'/', 'AADLoginForLinux')]",
           "type": "Microsoft.Compute/virtualMachines/extensions",
-          "apiVersion": "2017-12-01",
+          "apiVersion": "2020-06-01",
           "location": "[parameters('location')]",
           "properties": {
             "publisher": "Microsoft.Azure.ActiveDirectory.LinuxSSH",
@@ -360,7 +367,7 @@
           ]
         },
         {
-          "apiVersion": "2016-03-30",
+          "apiVersion": "2020-06-01",
           "type": "extensions",
           "name": "Installation",
           "location": "[parameters('location')]",
@@ -385,7 +392,7 @@
       ]
     },
     {
-      "apiVersion": "2016-09-01",
+      "apiVersion": "2020-06-01",
       "type": "Microsoft.Network/networkInterfaces",
       "name": "[concat(variables('nicNameWorker'), copyindex())]",
       "location": "[parameters('location')]",
@@ -412,7 +419,7 @@
       }
     },
     {
-      "apiVersion": "2019-03-01",
+      "apiVersion": "2020-06-01",
       "type": "Microsoft.Compute/virtualMachines",
       "name": "[concat(variables('vmNameWorker'), copyindex())]",
       "location": "[parameters('location')]",
@@ -465,7 +472,7 @@
       },
       "resources": [
         {
-          "apiVersion": "2014-10-01-preview",
+          "apiVersion": "2020-04-01-preview",
           "name": "[concat(variables('vmNameWorker'), copyindex(), '/Microsoft.Authorization/', guid(resourceGroup().id, concat(variables('vmNameWorker'), copyindex())))]",
           "type": "Microsoft.Compute/virtualMachines/providers/roleAssignments",
           "properties": {
@@ -479,7 +486,7 @@
         {
           "name": "[concat(variables('vmNameWorker'), copyindex(), '/', 'AADLoginForLinux')]",
           "type": "Microsoft.Compute/virtualMachines/extensions",
-          "apiVersion": "2017-12-01",
+          "apiVersion": "2020-06-01",
           "location": "[parameters('location')]",
           "properties": {
             "publisher": "Microsoft.Azure.ActiveDirectory.LinuxSSH",
@@ -492,7 +499,7 @@
           ]
         },
         {
-          "apiVersion": "2016-03-30",
+          "apiVersion": "2020-06-01",
           "type": "extensions",
           "name": "WorkerInstallation",
           "location": "[parameters('location')]",

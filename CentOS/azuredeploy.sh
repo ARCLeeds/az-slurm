@@ -16,9 +16,9 @@ whoami
 echo $@
 
 # Usage
-if [ "$#" -ne 13 ]; then
+if [ "$#" -ne 14 ]; then
   echo "$#: $0 $*"
-  echo "Usage: $0 MASTER_NAME MASTER_IP WORKER_NAME WORKER_IP_BASE WORKER_IP_START NUM_OF_VM ADMIN_USERNAME ADMIN_PASSWORD TEMPLATE_BASE RG_NAME TENANT_ID SP_ID SP_SECRET"
+  echo "Usage: $0 MASTER_NAME MASTER_IP WORKER_NAME WORKER_IP_BASE WORKER_IP_START NUM_OF_VM ADMIN_USERNAME ADMIN_PASSWORD TEMPLATE_BASE RG_NAME TENANT_ID SP_ID SP_SECRET WORKER_CPUS"
   exit 1
 fi
 
@@ -39,6 +39,7 @@ RG_NAME=${10}
 TENANT_ID=${11}
 SP_ID=${12}
 SP_SECRET=${13}
+WORKER_CPUS=${14}
 
 ssh_known_hosts=/tmp/ssh_known_hosts.$$
 shosts_equiv=/tmp/shosts.equiv.$$
@@ -232,6 +233,7 @@ yum -y install /rpmbuild/RPMS/x86_64/slurm-${SLURMVERSION}-1.el7.x86_64.rpm \
 SLURMCONF=/tmp/slurm.conf.$$
 wget $TEMPLATE_BASE/slurm.template.conf -O $SLURMCONF
 sed -i -- 's/__MASTERNODE__/'"$MASTER_NAME"'/g' $SLURMCONF
+sed -i -- 's/__WORKERCPUS__/'"$WORKER_CPUS"'/g' $SLURMCONF
 lastvm=`expr $NUM_OF_VM - 1`
 sed -i -- 's/__WORKERNODES__/'"$WORKER_NAME"'[0-'"$lastvm"']/g' $SLURMCONF
 cp -f $SLURMCONF /etc/slurm/slurm.conf
