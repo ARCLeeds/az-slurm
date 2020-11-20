@@ -430,7 +430,7 @@
       "resources": [
         {
           "apiVersion": "2014-10-01-preview",
-          "name": "[concat(variables('vmNameWorker'), copyindex(), '/Microsoft.Authorization/71121498-465D-465A-AA4A-861DC8116095')]",
+          "name": "[concat(variables('vmNameWorker'), copyindex(), '/Microsoft.Authorization/', guid(resourceGroup().id, concat(variables('vmNameWorker'), copyindex())))]",
           "type": "Microsoft.Compute/virtualMachines/providers/roleAssignments",
           "properties": {
             "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '9980e02c-c2be-4d73-94e8-173b1dc7cf3c')]",
