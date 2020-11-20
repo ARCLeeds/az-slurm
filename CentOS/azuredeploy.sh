@@ -138,10 +138,10 @@ do
    sudo -u $ADMIN_USERNAME sh -c "sshpass -p '$ADMIN_PASSWORD' ssh-copy-id $WORKER_NAME$i"
    sed
    sed "s/master/$WORKER_IP_BASE$workerip/" /tmp/ssh-template >> $ssh_known_hosts
-   sed "s/master/$worker $worker.internal.cloudapp.net/" /tmp/ssh-template >> $ssh_known_hosts
+   sed "s/master/$worker,$worker.internal.cloudapp.net/" /tmp/ssh-template >> $ssh_known_hosts
    echo $worker >> $shosts_equiv
    echo $WORKER_NAME$i >> /etc/ansible/hosts
-   echo $WORKER_IP_BASE$workerip $worker.internal.cloudapp.net,$worker >> /etc/hosts
+   echo $WORKER_IP_BASE$workerip $worker.internal.cloudapp.net $worker >> /etc/hosts
    i=`expr $i + 1`
 done
 
