@@ -118,7 +118,6 @@ exportfs -a
 
 # Start building needed SSH files used for host authentication
 /usr/bin/ssh-keyscan master > /tmp/ssh-template
-cat /tmp/ssh-template >> $ssh_known_hosts
 sed "s/master/master,master.internal.cloudapp.net/" /tmp/ssh-template >> $ssh_known_hosts
 echo master > $shosts_equiv
 echo master.internal.cloudapp.net >> $shosts_equiv
@@ -137,8 +136,7 @@ do
    echo 'I update host - '$WORKER_NAME$i
    sudo -u $ADMIN_USERNAME sh -c "sshpass -p '$ADMIN_PASSWORD' ssh-copy-id $WORKER_NAME$i"
    sed
-   sed "s/master/$WORKER_IP_BASE$workerip/" /tmp/ssh-template >> $ssh_known_hosts
-   sed "s/master/$worker,$worker.internal.cloudapp.net/" /tmp/ssh-template >> $ssh_known_hosts
+   sed "s/master/$worker,$worker.internal.cloudapp.net,$WORKER_IP_BASE$workerip/" /tmp/ssh-template >> $ssh_known_hosts
    echo $worker >> $shosts_equiv
    echo $WORKER_NAME$i >> /etc/ansible/hosts
    echo $WORKER_IP_BASE$workerip $worker.internal.cloudapp.net $worker >> /etc/hosts
