@@ -5,23 +5,44 @@
     "headNodeSize": {
       "value": "Standard_B2s"
     },
-    "workerNodeSize": {
-      "value": "Standard_D2s_v3"
-    },
-    "workerImageOffer": {
-      "value": "CentOS"
-    },
     "numDataDisks": {
       "value": 1
     },
     "sizeDataDisks": {
       "value": 1
     },
-    "scaleNumber": {
-      "value": 1
+    "partitions": {
+      "value": [
+        {
+          "name": "worker",
+	  "NodeSize": "Standard_D2s_v3",
+	  "ImageOffer": "CentOS",
+	  "scaleNumber": 1,
+	  "NodeCPUCount": 2
+	},
+        {
+          "name": "more",
+	  "NodeSize": "Standard_D4s_v3",
+	  "ImageOffer": "CentOS",
+	  "scaleNumber": 2,
+	  "NodeCPUCount": 4
+	}
+      ]
     },
-    "servicePrincipalName": {
-      "value": "http://RCSlurmTest2"
+    "servicePrincipalID": {
+      "value": "GUID"
+    },
+    "servicePrincipalObjectID": {
+      "value": "GUID"
+    },
+    "servicePrincipalSecret": {
+      "value": "GUID"
+     },
+    "userGroupID": {
+      "value": "GUID"
+     },
+    "adminGroupID": {
+      "value": "GUID"
     }
   }
 }

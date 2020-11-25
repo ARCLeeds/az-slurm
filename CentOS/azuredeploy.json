@@ -2,6 +2,9 @@
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
+    "partitions": {
+      "type": "array"
+    },
     "userGroupID": {
       "type": "string",
       "metadata": {
@@ -80,52 +83,6 @@
         "description": "Size of the head node."
       }
     },
-    "workerNodeSize": {
-      "type": "string",
-      "defaultValue": "Standard_H16r",
-      "allowedValues": [
-        "Standard_H16r",
-        "Standard_H16mr",
-        "Standard_H8",
-        "Standard_H16",
-        "Standard_H8m",
-        "Standard_H16m",
-        "Standard_HB60rs",
-        "Standard_D2_v2",
-        "Standard_DS2_v2",
-        "Standard_DS5_v2",
-        "Standard_D2s_v3",
-        "Standard_D16s_v3"
-      ],
-      "metadata": {
-        "description": "Size of the worker nodes."
-      }
-    },
-    "workerNodeCPUCount": {
-      "type": "int",
-      "defaultValue": 16,
-      "metadata": {
-        "description": "Number of CPU cores in a worker node."
-      }
-    },
-    "workerImageOffer": {
-      "type": "string",
-      "defaultValue": "CentOS-HPC",
-      "allowedValues": [
-        "CentOS-HPC",
-        "CentOS"
-      ],
-      "metadata": {
-        "description": "Operating System. Choose CentOS-HPC if using Standard_H16r or Standard_H16mr otherwise use CentOS"
-      }
-    },
-    "scaleNumber": {
-      "type": "int",
-      "defaultValue": 2,
-      "metadata": {
-        "description": "This template creates N worker nodes. Use scaleNumber to specify that N."
-      }
-    },
     "numDataDisks": {
       "type": "int",
       "defaultValue": 2,
@@ -175,9 +132,9 @@
     "centOSVersion": "7_8-gen2",
     "publicIPAddressName": "publicip",
     "vmNameMaster": "master",
-    "vmNameWorker": "worker",
+    "vmNameWorker": "[parameters('partitions')[0].name]",
     "nicNameMaster": "nic",
-    "nicNameWorker": "nic-worker-",
+    "nicNameWorker": "[concat('nic-', variables('vmNameWorker'))]",
     "networkSettings": {
       "virtualNetworkName": "virtualnetwork",
       "addressPrefix": "10.0.0.0/16",
@@ -197,7 +154,7 @@
       }
     },
     "subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets/', variables('networkSettings').virtualNetworkName, variables('networkSettings').subnet.dse.name)]",
-    "installationCLI": "[concat('sh azuredeploy.sh ', variables('vmNameMaster'), ' ', variables('networkSettings').statics.master, ' ', variables('vmNameWorker'), ' ', variables('networkSettings').statics.workerRange.base, ' ', variables('networkSettings').statics.workerRange.start, ' ', parameters('scaleNumber'), ' ', parameters('adminUsername'), ' ', parameters('adminPassword'), ' ', parameters('_artifactsLocation'), ' ', resourceGroup().name, ' ', subscription().tenantId, ' ', parameters('servicePrincipalID'), ' ', parameters('servicePrincipalSecret'), ' ', parameters('workerNodeCPUCount'))]"
+    "installationCLI": "[concat('sh azuredeploy.sh ', variables('vmNameMaster'), ' ', variables('networkSettings').statics.master, ' ', variables('vmNameWorker'), ' ', variables('networkSettings').statics.workerRange.base, ' ', variables('networkSettings').statics.workerRange.start, ' ', parameters('partitions')[0].scaleNumber, ' ', parameters('adminUsername'), ' ', parameters('adminPassword'), ' ', parameters('_artifactsLocation'), ' ', resourceGroup().name, ' ', subscription().tenantId, ' ', parameters('servicePrincipalID'), ' ', parameters('servicePrincipalSecret'), ' ', parameters('partitions')[0].scaleNumber)]"
   },
   "resources": [
     {
@@ -401,7 +358,7 @@
       ],
       "copy": {
         "name": "nicLoop",
-        "count": "[parameters('scaleNumber')]"
+        "count": "[parameters('partitions')[0].scaleNumber]"
       },
       "properties": {
         "ipConfigurations": [
@@ -432,14 +389,14 @@
       ],
       "copy": {
         "name": "foo",
-        "count": "[parameters('scaleNumber')]"
+        "count": "[parameters('partitions')[0].scaleNumber]"
       },
       "properties": {
         "proximityPlacementGroup": {
           "id": "[resourceId('Microsoft.Compute/proximityPlacementGroups', parameters('ppgName'))]"
         },
         "hardwareProfile": {
-          "vmSize": "[parameters('workerNodeSize')]"
+          "vmSize": "[parameters('partitions')[0].NodeSize]"
         },
         "osProfile": {
           "adminUsername": "[parameters('adminUsername')]",
@@ -449,7 +406,7 @@
         "storageProfile": {
           "imageReference": {
             "publisher": "[variables('imagePublisher')]",
-            "offer": "[parameters('workerImageOffer')]",
+            "offer": "[parameters('partitions')[0].ImageOffer]",
             "sku": "[variables('centOSVersion')]",
             "version": "latest"
           },
