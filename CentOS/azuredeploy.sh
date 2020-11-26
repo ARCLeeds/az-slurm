@@ -277,7 +277,7 @@ ResumeProgram=/home/slurm/slurm-resume
 EOB
 
 # Loop through all worker nodes, update hosts file and slurm config
-for ((i=0;i<=$PARTITION_COUNT;i++)); do
+for ((i=0;i<$PARTITION_COUNT;i++)); do
   NODE_COUNT=$(echo $JSON | jq -r ".[$i].scaleNumber")
   CPU_COUNT=$(echo $JSON | jq -r ".[$i].NodeCPUCount")
   WORKER_NAME=$(echo $JSON | jq -r ".[$i].name")
