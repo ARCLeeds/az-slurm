@@ -191,7 +191,7 @@
               },
               "statics": {
                 "workerRange": {
-                  "base": "[concat('10.0.', add(copyIndex(),1), '.')]",
+                  "base": "[concat('10.0.', copyIndex(), '.')]",
                   "start": 5
                 },
                 "master": "10.0.0.254"
