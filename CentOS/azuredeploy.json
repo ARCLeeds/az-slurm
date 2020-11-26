@@ -83,6 +83,52 @@
         "description": "Size of the head node."
       }
     },
+    "workerNodeSize": {
+      "type": "string",
+      "defaultValue": "Standard_H16r",
+      "allowedValues": [
+        "Standard_H16r",
+        "Standard_H16mr",
+        "Standard_H8",
+        "Standard_H16",
+        "Standard_H8m",
+        "Standard_H16m",
+        "Standard_HB60rs",
+        "Standard_D2_v2",
+        "Standard_DS2_v2",
+        "Standard_DS5_v2",
+        "Standard_D2s_v3",
+        "Standard_D16s_v3"
+      ],
+      "metadata": {
+        "description": "Size of the worker nodes."
+      }
+    },
+    "workerNodeCPUCount": {
+      "type": "int",
+      "defaultValue": 16,
+      "metadata": {
+        "description": "Number of CPU cores in a worker node."
+      }
+    },
+    "workerImageOffer": {
+      "type": "string",
+      "defaultValue": "CentOS-HPC",
+      "allowedValues": [
+        "CentOS-HPC",
+        "CentOS"
+      ],
+      "metadata": {
+        "description": "Operating System. Choose CentOS-HPC if using Standard_H16r or Standard_H16mr otherwise use CentOS"
+      }
+    },
+    "scaleNumber": {
+      "type": "int",
+      "defaultValue": 2,
+      "metadata": {
+        "description": "This template creates N worker nodes. Use scaleNumber to specify that N."
+      }
+    },
     "numDataDisks": {
       "type": "int",
       "defaultValue": 2,
@@ -132,16 +178,16 @@
     "centOSVersion": "7_8-gen2",
     "publicIPAddressName": "publicip",
     "vmNameMaster": "master",
-    "vmNameWorker": "[parameters('partitions')[0].name]",
+    "vmNameWorker": "worker",
     "nicNameMaster": "nic",
-    "nicNameWorker": "[concat('nic-', variables('vmNameWorker'))]",
+    "nicNameWorker": "nic-worker-",
     "networkSettings": {
       "virtualNetworkName": "virtualnetwork",
       "addressPrefix": "10.0.0.0/16",
       "subnet": {
         "dse": {
           "name": "dse",
-          "prefix": "10.0.0.0/24",
+          "prefix": "10.0.0.0/16",
           "vnet": "virtualnetwork"
         }
       },
@@ -154,9 +200,292 @@
       }
     },
     "subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets/', variables('networkSettings').virtualNetworkName, variables('networkSettings').subnet.dse.name)]",
-    "installationCLI": "[concat('sh azuredeploy.sh ', variables('vmNameMaster'), ' ', variables('networkSettings').statics.master, ' ', variables('vmNameWorker'), ' ', variables('networkSettings').statics.workerRange.base, ' ', variables('networkSettings').statics.workerRange.start, ' ', parameters('partitions')[0].scaleNumber, ' ', parameters('adminUsername'), ' ', parameters('adminPassword'), ' ', parameters('_artifactsLocation'), ' ', resourceGroup().name, ' ', subscription().tenantId, ' ', parameters('servicePrincipalID'), ' ', parameters('servicePrincipalSecret'), ' ', parameters('partitions')[0].scaleNumber)]"
+    "installationCLI": "[concat('sh azuredeploy.sh ', variables('vmNameMaster'), ' ', variables('networkSettings').statics.master, ' ', variables('vmNameWorker'), ' ', variables('networkSettings').statics.workerRange.base, ' ', variables('networkSettings').statics.workerRange.start, ' ', parameters('scaleNumber'), ' ', parameters('adminUsername'), ' ', parameters('adminPassword'), ' ', parameters('_artifactsLocation'), ' ', resourceGroup().name, ' ', subscription().tenantId, ' ', parameters('servicePrincipalID'), ' ', parameters('servicePrincipalSecret'), ' ', parameters('workerNodeCPUCount'))]"
   },
   "resources": [
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2019-09-01",
+      "name": "[concat('partitionDeployment-', copyIndex())]",
+      "copy": {
+        "name": "deployPartitionsLoop",
+        "count": 2
+      },
+      "dependsOn": [
+        "[variables('networkSettings').virtualNetworkName]",
+        "Installation"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "parameters": {
+          "NodeSize": {
+            "value": "[parameters('partitions')[copyIndex()].NodeSize]"
+          },
+          "ppgName": {
+            "value": "[concat('ppg-', parameters('partitions')[copyIndex()].name)]"
+          },
+          "nicName": {
+            "value": "[concat('nic-', parameters('partitions')[copyIndex()].name)]"
+          },
+          "networkSettings": {
+            "value": {
+              "virtualNetworkName": "virtualnetwork",
+              "addressPrefix": "10.0.0.0/16",
+              "subnet": {
+                "dse": {
+                  "name": "dse",
+                  "prefix": "10.0.0.0/16",
+                  "vnet": "virtualnetwork"
+                }
+              },
+              "statics": {
+                "workerRange": {
+                  "base": "[concat('10.0.', add(copyIndex(),1), '.')]",
+                  "start": 5
+                },
+                "master": "10.0.0.254"
+              }
+            }
+          },
+          "scaleNumber": {
+            "value": "[parameters('partitions')[copyIndex()].scaleNumber]"
+          },
+          "subnetRef": {
+            "value": "[resourceId('Microsoft.Network/virtualNetworks/subnets/', variables('networkSettings').virtualNetworkName, variables('networkSettings').subnet.dse.name)]"
+          },
+          "vmName": {
+            "value": "[parameters('partitions')[copyIndex()].name]"
+          },
+          "ImageOffer": {
+            "value": "[parameters('partitions')[copyIndex()].ImageOffer]"
+          },
+          "adminUsername": {
+            "value": "[parameters('adminUsername')]"
+          },
+          "adminPassword": {
+            "value": "[parameters('adminPassword')]"
+          },
+          "_artifactsLocation": {
+            "value": "[parameters('_artifactsLocation')]"
+          },
+          "_artifactsLocationSasToken": {
+            "value": "[parameters('_artifactsLocationSasToken')]"
+          },
+	  "servicePrincipalObjectID": {
+	    "value": "[parameters('servicePrincipalObjectID')]"
+	  },
+	  "servicePrincipalSecret": {
+	    "value": "[parameters('servicePrincipalSecret')]"
+	  }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "parameters": {
+            "NodeSize": {
+              "type": "string"
+            },
+            "ppgName": {
+              "type": "string"
+            },
+            "location": {
+              "type": "string",
+              "defaultValue": "[resourceGroup().location]"
+            },
+            "nicName": {
+              "type": "string"
+            },
+            "scaleNumber": {
+              "type": "int"
+            },
+            "networkSettings": {
+              "type": "object"
+            },
+            "subnetRef": {
+              "type": "string"
+            },
+            "vmName": {
+              "type": "string"
+            },
+            "imagePublisher": {
+              "type": "string",
+              "defaultValue": "OpenLogic"
+            },
+            "ImageOffer": {
+              "type": "string"
+            },
+            "centOSVersion": {
+              "type": "string",
+              "defaultValue": "7_8-gen2"
+            },
+            "adminUsername": {
+              "type": "string"
+	    },
+            "adminPassword": {
+              "type": "string"
+	    },
+            "_artifactsLocation": {
+              "type": "string"
+	    },
+            "_artifactsLocationSasToken": {
+              "type": "string"
+	    },
+	    "servicePrincipalObjectID": {
+	      "type": "string"
+	    },
+	    "servicePrincipalSecret": {
+	      "type": "string"
+	    }
+          },
+          "resources": [
+            {
+              "apiVersion": "2020-06-01",
+              "type": "Microsoft.Compute/proximityPlacementGroups",
+              "name": "[parameters('ppgName')]",
+              "location": "[parameters('location')]"
+            },
+            {
+              "apiVersion": "2020-06-01",
+              "type": "Microsoft.Network/networkInterfaces",
+              "name": "[concat(parameters('nicName'), copyindex())]",
+              "location": "[parameters('location')]",
+              "copy": {
+                "name": "nicLoop2",
+                "count": "[parameters('scaleNumber')]"
+              },
+              "properties": {
+                "ipConfigurations": [
+                  {
+                    "name": "ipconfig1",
+                    "properties": {
+                      "privateIPAllocationMethod": "Static",
+                      "privateIPAddress": "[concat(parameters('networkSettings').statics.workerRange.base, copyindex(parameters('networkSettings').statics.workerRange.start))]",
+                      "subnet": {
+                        "id": "[parameters('subnetRef')]"
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "apiVersion": "2020-06-01",
+              "type": "Microsoft.Compute/virtualMachines",
+              "name": "[concat(parameters('vmName'), copyindex())]",
+              "location": "[parameters('location')]",
+              "identity": {
+                "type": "SystemAssigned"
+              },
+              "dependsOn": [
+                "nicLoop2",
+                "[parameters('ppgName')]"
+              ],
+              "copy": {
+                "name": "foo",
+                "count": "[parameters('scaleNumber')]"
+              },
+              "properties": {
+                "proximityPlacementGroup": {
+                  "id": "[resourceId('Microsoft.Compute/proximityPlacementGroups', parameters('ppgName'))]"
+                },
+                "hardwareProfile": {
+                  "vmSize": "[parameters('NodeSize')]"
+                },
+                "osProfile": {
+                  "adminUsername": "[parameters('adminUsername')]",
+                  "adminPassword": "[parameters('adminPassword')]",
+                  "computerName": "[concat(parameters('vmName'), copyindex())]"
+                },
+                "storageProfile": {
+                  "imageReference": {
+                    "publisher": "[parameters('imagePublisher')]",
+                    "offer": "[parameters('ImageOffer')]",
+                    "sku": "[parameters('centOSVersion')]",
+                    "version": "latest"
+                  },
+                  "osDisk": {
+                    "name": "[concat(parameters('vmName'), copyindex(),'_OSDisk')]",
+                    "caching": "ReadOnly",
+                    "createOption": "FromImage",
+                    "managedDisk": {
+                      "storageAccountType": "Standard_LRS"
+                    }
+                  }
+                },
+                "networkProfile": {
+                  "networkInterfaces": [
+                    {
+                      "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(parameters('nicName'), copyindex()))]"
+                    }
+                  ]
+                }
+              },
+              "resources": [
+                {
+                  "apiVersion": "2020-04-01-preview",
+                  "name": "[concat(parameters('vmName'), copyindex(), '/Microsoft.Authorization/', guid(resourceGroup().id, concat(parameters('vmName'), copyindex())))]",
+                  "type": "Microsoft.Compute/virtualMachines/providers/roleAssignments",
+                  "properties": {
+                    "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '9980e02c-c2be-4d73-94e8-173b1dc7cf3c')]",
+                    "principalId": "[parameters('servicePrincipalObjectID')]"
+                  },
+                  "dependsOn": [
+                    "[concat('Microsoft.Compute/virtualMachines/',parameters('vmName'), copyindex())]"
+                  ]
+                },
+              {
+                "name": "[concat(parameters('vmName'), copyindex(), '/', 'AADLoginForLinux')]",
+                "type": "Microsoft.Compute/virtualMachines/extensions",
+                "apiVersion": "2020-06-01",
+                "location": "[parameters('location')]",
+                "properties": {
+                  "publisher": "Microsoft.Azure.ActiveDirectory.LinuxSSH",
+                  "type": "AADLoginForLinux",
+                  "typeHandlerVersion": "1.0",
+                  "autoUpgradeMinorVersion": true
+                },
+                "dependsOn": [
+                  "[concat('Microsoft.Compute/virtualMachines/',parameters('vmName'), copyindex())]"
+                ]
+              },
+              {
+                "apiVersion": "2020-06-01",
+                "type": "extensions",
+                "name": "WorkerInstallation",
+                "location": "[parameters('location')]",
+                "dependsOn": [
+                  "[concat('Microsoft.Compute/virtualMachines/',parameters('vmName'), copyindex())]"
+                ],
+                "properties": {
+                  "publisher": "Microsoft.Azure.Extensions",
+                  "type": "CustomScript",
+                  "typeHandlerVersion": "2.0",
+                  "autoUpgradeMinorVersion": true,
+                  "settings": {
+                    "fileUris": [
+                      "[concat(parameters('_artifactsLocation'), 'workerdeploy.sh', parameters('_artifactsLocationSasToken'))]"
+                    ]
+                  },
+                  "protectedSettings": {
+                    "commandToExecute": "sh workerdeploy.sh"
+                  }
+                }
+              }
+              ]
+            }
+          ],
+          "outputs": {
+            "testVar": {
+              "type": "string",
+              "value": "[parameters('NodeSize')]"
+            }
+          }
+        }
+      }
+    },
     {
       "apiVersion": "2020-06-01",
       "type": "Microsoft.Network/virtualNetworks",
@@ -216,12 +545,6 @@
           }
         ]
       }
-    },
-    {
-      "apiVersion": "2020-06-01",
-      "type": "Microsoft.Compute/proximityPlacementGroups",
-      "name": "[parameters('ppgName')]",
-      "location": "[parameters('location')]"
     },
     {
       "apiVersion": "2020-06-01",
@@ -350,6 +673,12 @@
     },
     {
       "apiVersion": "2020-06-01",
+      "type": "Microsoft.Compute/proximityPlacementGroups",
+      "name": "[parameters('ppgName')]",
+      "location": "[parameters('location')]"
+    },
+    {
+      "apiVersion": "2020-06-01",
       "type": "Microsoft.Network/networkInterfaces",
       "name": "[concat(variables('nicNameWorker'), copyindex())]",
       "location": "[parameters('location')]",
@@ -358,7 +687,7 @@
       ],
       "copy": {
         "name": "nicLoop",
-        "count": "[parameters('partitions')[0].scaleNumber]"
+        "count": "[parameters('scaleNumber')]"
       },
       "properties": {
         "ipConfigurations": [
@@ -389,14 +718,14 @@
       ],
       "copy": {
         "name": "foo",
-        "count": "[parameters('partitions')[0].scaleNumber]"
+        "count": "[parameters('scaleNumber')]"
       },
       "properties": {
         "proximityPlacementGroup": {
           "id": "[resourceId('Microsoft.Compute/proximityPlacementGroups', parameters('ppgName'))]"
         },
         "hardwareProfile": {
-          "vmSize": "[parameters('partitions')[0].NodeSize]"
+          "vmSize": "[parameters('workerNodeSize')]"
         },
         "osProfile": {
           "adminUsername": "[parameters('adminUsername')]",
@@ -406,7 +735,7 @@
         "storageProfile": {
           "imageReference": {
             "publisher": "[variables('imagePublisher')]",
-            "offer": "[parameters('partitions')[0].ImageOffer]",
+            "offer": "[parameters('workerImageOffer')]",
             "sku": "[variables('centOSVersion')]",
             "version": "latest"
           },
