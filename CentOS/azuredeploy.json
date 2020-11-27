@@ -3,7 +3,8 @@
   "contentVersion": "1.0.0.0",
   "parameters": {
     "extraSlurmConfig": {
-      "type": "string"
+      "type": "string",
+      "defaultValue": ""
     },
     "partitions": {
       "type": "array"
@@ -233,7 +234,7 @@
 	  },
 	  "centOSVersion": {
 	    "value": "[variables('centOSVersion')]"
-	  },
+	  }
         },
         "template": {
           "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
