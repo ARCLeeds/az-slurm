@@ -2,6 +2,9 @@
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
+    "extraSlurmConfig": {
+      "type": "string"
+    },
     "partitions": {
       "type": "array"
     },
@@ -125,7 +128,7 @@
     "dnsName": "[concat('slurm-', uniqueString(resourceGroup().id))]",
     "imagePublisher": "OpenLogic",
     "headImageOffer": "CentOS",
-    "centOSVersion": "7_8-gen2",
+    "centOSVersion": "7_7-gen2",
     "publicIPAddressName": "publicip",
     "vmNameMaster": "master",
     "nicNameMaster": "nic",
@@ -148,7 +151,7 @@
       }
     },
     "subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets/', variables('networkSettings').virtualNetworkName, variables('networkSettings').subnet.dse.name)]",
-    "installationCLI": "[concat('sh azuredeploy.sh ', variables('vmNameMaster'), ' ', variables('networkSettings').statics.master, ' ', variables('networkSettings').statics.workerRange.base, ' ', variables('networkSettings').statics.workerRange.start, ' ', parameters('adminUsername'), ' ', parameters('adminPassword'), ' ', parameters('_artifactsLocation'), ' ', resourceGroup().name, ' ', subscription().tenantId, ' ', parameters('servicePrincipalID'), ' ', parameters('servicePrincipalSecret'), ' ', base64(string(parameters('partitions'))))]"
+    "installationCLI": "[concat('sh azuredeploy.sh ', variables('vmNameMaster'), ' ', variables('networkSettings').statics.master, ' ', variables('networkSettings').statics.workerRange.base, ' ', variables('networkSettings').statics.workerRange.start, ' ', parameters('adminUsername'), ' ', parameters('adminPassword'), ' ', parameters('_artifactsLocation'), ' ', resourceGroup().name, ' ', subscription().tenantId, ' ', parameters('servicePrincipalID'), ' ', parameters('servicePrincipalSecret'), ' ', base64(string(parameters('partitions'))), ' ', base64(parameters('extraSlurmConfig')))]"
   },
   "resources": [
     {
@@ -227,6 +230,9 @@
 	  },
 	  "servicePrincipalSecret": {
 	    "value": "[parameters('servicePrincipalSecret')]"
+	  },
+	  "centOSVersion": {
+	    "value": "[variables('centOSVersion')]"
 	  }
         },
         "template": {

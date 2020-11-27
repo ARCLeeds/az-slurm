@@ -16,9 +16,9 @@ whoami
 echo $@
 
 # Usage
-if [ "$#" -ne 12 ]; then
+if [ "$#" -ne 13 ]; then
   echo "$#: $0 $*"
-  echo "Usage: $0 MASTER_NAME MASTER_IP WORKER_IP_BASE WORKER_IP_START ADMIN_USERNAME ADMIN_PASSWORD TEMPLATE_BASE RG_NAME TENANT_ID SP_ID SP_SECRET PARTITIONS"
+  echo "Usage: $0 MASTER_NAME MASTER_IP WORKER_IP_BASE WORKER_IP_START ADMIN_USERNAME ADMIN_PASSWORD TEMPLATE_BASE RG_NAME TENANT_ID SP_ID SP_SECRET PARTITIONS EXTRASLURM"
   exit 1
 fi
 
@@ -38,6 +38,7 @@ TENANT_ID=$9
 SP_ID=${10}
 SP_SECRET=${11}
 BASE64_ENCODED=${12}
+EXTRASLURM=$(echo ${13} | base64 --decode)
 
 ssh_known_hosts=/tmp/ssh_known_hosts.$$
 shosts_equiv=/tmp/shosts.equiv.$$
@@ -273,6 +274,8 @@ ResumeTimeout=600
 SuspendProgram=/home/slurm/slurm-suspend
 # Program used to resume a node
 ResumeProgram=/home/slurm/slurm-resume
+
+$EXTRASLURM
 
 EOB
 
