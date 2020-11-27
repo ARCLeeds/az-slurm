@@ -284,9 +284,18 @@ for ((i=0;i<$PARTITION_COUNT;i++)); do
   NODE_COUNT=$(echo $JSON | jq -r ".[$i].scaleNumber")
   NODE_PARAMS=$(echo $JSON | jq -r ".[$i].slurmParameters")
   WORKER_NAME=$(echo $JSON | jq -r ".[$i].name")
+  NVIDIA_CARD=$(echo $JSON | jq -r ".[$i].nvidiaCard")
+  NVIDIA_COUNT=$(echo $JSON | jq -r ".[$i].nvidiaCount")
   lastvm=`expr $NODE_COUNT - 1`
-  
-  echo NodeName="$WORKER_NAME[0-"$lastvm"] $NODE_PARAMS State=CLOUD" >> /etc/slurm/slurm.conf
+
+  if [ $NVIDIA != "false" ]; then
+    NVIDIA_ARGS="Gres=gpu:$NVIDIA_CARD:$NVIDIA_COUNT"
+    for ((card=0;card<$NVIDIA_COUNT;card++)); do
+      echo "NodeName=${WORKER_NAME}[0-${lastvm}] Name=gpu Type=$NVIDIA_CARD File=/dev/nvidia${card}" >> /data/system/gres.conf
+    done
+  fi
+
+  echo NodeName="$WORKER_NAME[0-"$lastvm"] $NVIDIA_ARGS $NODE_PARAMS State=CLOUD" >> /etc/slurm/slurm.conf
   echo PartitionName=$WORKER_NAME Nodes=$WORKER_NAME[0-"$lastvm"] MaxTime=10 State=UP >> /etc/slurm/slurm.conf
   IP_BASE="${WORKER_IP_BASE}$i."
 

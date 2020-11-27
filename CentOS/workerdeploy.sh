@@ -39,6 +39,7 @@ systemctl enable munge
 systemctl start munge
 rm -f /etc/slurm/slurm.conf
 ln -s /data/system/slurm.conf /etc/slurm/slurm.conf
+ln -s /data/system/slurm.conf /etc/slurm/gres.conf
 systemctl enable slurmd
 systemctl start  slurmd
 # Install OpenMPI
@@ -50,3 +51,13 @@ systemctl enable systemd-tmpfiles-setup
 echo '%aad_admins ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/aad_admins
 cat /data/system/hosts > /etc/hosts
 ln -sf /data/system/aadpasswd /etc/aadpasswd
+
+# Just discover if we have an nvidia card, and update and install a driver if so
+if lspci|grep -i nvidia;then
+  yum -y install dkms kernel-devel
+  CUDA_REPO_PKG=cuda-repo-rhel7-10.2.89-1.x86_64.rpm
+  yum -y install --nogpg http://developer.download.nvidia.com/compute/cuda/repos/rhel7/x86_64/${CUDA_REPO_PKG}
+  yum -y upgrade
+  yum -y install cuda
+  shutdown -r +1
+fi
