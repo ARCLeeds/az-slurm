@@ -4,7 +4,7 @@
   "parameters": {
     "extraSlurmConfig": {
       "type": "string",
-      "defaultValue": ""
+      "defaultValue": " "
     },
     "partitions": {
       "type": "array"
