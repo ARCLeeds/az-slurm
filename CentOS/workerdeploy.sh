@@ -6,6 +6,15 @@ exec >& /root/install.log
 setenforce 0
 sed -i 's/SELINUX=enforcing/SELINUX=permissive/' /etc/selinux/config
 
+# Just discover if we have an nvidia card, and update and install a driver if so
+if lspci|grep -i nvidia;then
+  yum -y install dkms kernel-devel
+  CUDA_REPO_PKG=cuda-repo-rhel7-10.2.89-1.x86_64.rpm
+  yum -y install --nogpg http://developer.download.nvidia.com/compute/cuda/repos/rhel7/x86_64/${CUDA_REPO_PKG}
+  yum -y upgrade --exclude=WALinuxAgent
+  yum -y install cuda
+fi
+
 SLURMVERSION=20.02.6
 
 yum -y install nfs-utils
@@ -41,7 +50,7 @@ rm -f /etc/slurm/slurm.conf
 ln -s /data/system/slurm.conf /etc/slurm/slurm.conf
 ln -s /data/system/slurm.conf /etc/slurm/gres.conf
 systemctl enable slurmd
-systemctl start  slurmd
+
 # Install OpenMPI
 yum -y install openmpi3-devel
 # Fix broken tmpfilesd
@@ -52,12 +61,9 @@ echo '%aad_admins ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/aad_admins
 cat /data/system/hosts > /etc/hosts
 ln -sf /data/system/aadpasswd /etc/aadpasswd
 
-# Just discover if we have an nvidia card, and update and install a driver if so
+# If we've got nvidia, schedule a reboot, else start slurmd
 if lspci|grep -i nvidia;then
-  yum -y install dkms kernel-devel
-  CUDA_REPO_PKG=cuda-repo-rhel7-10.2.89-1.x86_64.rpm
-  yum -y install --nogpg http://developer.download.nvidia.com/compute/cuda/repos/rhel7/x86_64/${CUDA_REPO_PKG}
-  yum -y upgrade
-  yum -y install cuda
   shutdown -r +1
+else
+  systemctl start  slurmd
 fi
