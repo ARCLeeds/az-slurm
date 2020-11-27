@@ -6,6 +6,9 @@ exec >& /root/install.log
 setenforce 0
 sed -i 's/SELINUX=enforcing/SELINUX=permissive/' /etc/selinux/config
 
+# Sort EPEL out early
+yum -y install epel-release
+
 # Just discover if we have an nvidia card, and update and install a driver if so
 if lspci|grep -i nvidia;then
   yum -y install dkms kernel-devel
@@ -38,7 +41,6 @@ cat /data/system/authorized_keys > /root/.ssh/authorized_keys
 
 chmod g-w /var/log
 useradd -c "Slurm scheduler" slurm
-yum -y install epel-release
 yum -y install munge
 yum -y install /data/system/RPMS/x86_64/slurm-${SLURMVERSION}-1.el7.x86_64.rpm  /data/system/RPMS/x86_64/slurm-example-configs-${SLURMVERSION}-1.el7.x86_64.rpm /data/system/RPMS/x86_64/slurm-libpmi-${SLURMVERSION}-1.el7.x86_64.rpm /data/system/RPMS/x86_64/slurm-pam_slurm-${SLURMVERSION}-1.el7.x86_64.rpm /data/system/RPMS/x86_64/slurm-slurmd-${SLURMVERSION}-1.el7.x86_64.rpm
 install -m 400 -o munge -g munge /data/system/munge.key /etc/munge/munge.key
