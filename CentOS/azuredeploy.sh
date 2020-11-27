@@ -282,11 +282,11 @@ EOB
 # Loop through all worker nodes, update hosts file and slurm config
 for ((i=0;i<$PARTITION_COUNT;i++)); do
   NODE_COUNT=$(echo $JSON | jq -r ".[$i].scaleNumber")
-  CPU_COUNT=$(echo $JSON | jq -r ".[$i].NodeCPUCount")
+  NODE_PARAMS=$(echo $JSON | jq -r ".[$i].slurmParameters")
   WORKER_NAME=$(echo $JSON | jq -r ".[$i].name")
   lastvm=`expr $NODE_COUNT - 1`
   
-  echo NodeName="$WORKER_NAME[0-"$lastvm"] CPUs=$CPU_COUNT State=CLOUD" >> /etc/slurm/slurm.conf
+  echo NodeName="$WORKER_NAME[0-"$lastvm"] $NODE_PARAMS State=CLOUD" >> /etc/slurm/slurm.conf
   echo PartitionName=$WORKER_NAME Nodes=$WORKER_NAME[0-"$lastvm"] MaxTime=10 State=UP >> /etc/slurm/slurm.conf
   IP_BASE="${WORKER_IP_BASE}$i."
 
