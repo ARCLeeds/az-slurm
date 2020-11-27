@@ -1,6 +1,6 @@
 #!/bin/bash
 set -x
-exec >& /tmp/install.log
+exec >& /root/install.log
 
 # This should be removed and fixed
 setenforce 0
@@ -32,8 +32,8 @@ useradd -c "Slurm scheduler" slurm
 yum -y install epel-release
 yum -y install munge
 yum -y install /data/system/RPMS/x86_64/slurm-${SLURMVERSION}-1.el7.x86_64.rpm  /data/system/RPMS/x86_64/slurm-example-configs-${SLURMVERSION}-1.el7.x86_64.rpm /data/system/RPMS/x86_64/slurm-libpmi-${SLURMVERSION}-1.el7.x86_64.rpm /data/system/RPMS/x86_64/slurm-pam_slurm-${SLURMVERSION}-1.el7.x86_64.rpm /data/system/RPMS/x86_64/slurm-slurmd-${SLURMVERSION}-1.el7.x86_64.rpm
-install -m 600 -o munge -g munge /data/system/munge.key /etc/munge/munge.key
-ls -l /etc/munge/munge.key
+install -m 400 -o munge -g munge /data/system/munge.key /etc/munge/munge.key
+md5sum /data/system/munge.key /etc/munge/munge.key
 systemctl daemon-reload
 systemctl enable munge
 systemctl start munge
