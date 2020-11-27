@@ -4,7 +4,7 @@ exec >& /root/install.log
 
 # This should be removed and fixed
 setenforce 0
-sed -i 's/SELINUX=enforcing/SELINUX=permissive/' /etc/config/selinux
+sed -i 's/SELINUX=enforcing/SELINUX=permissive/' /etc/selinux/config
 
 SLURMVERSION=20.02.6
 
