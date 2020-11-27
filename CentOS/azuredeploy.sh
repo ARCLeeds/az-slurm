@@ -115,7 +115,7 @@ mount /data
 chmod 1777 /data
 mkdir /data/home
 mv /home/* /data/home/
-echo -e "/data/home\t/home\tnone\tbind\t0 0" >> /etc/fstab
+echo -e "/data/home\t/home\tnone\tx-systemd.requires=/data,bind\t0 0" >> /etc/fstab
 mount /home
 restorecon /home
 
