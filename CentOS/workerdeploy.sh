@@ -17,7 +17,7 @@ bash -c 'echo -e "master:/data\t/data\tnfs\tdefaults\t0 0" >> /etc/fstab'
 mount /data
 
 # Rejig to provide NFS home directories
-bash -c 'echo -e "/data/home /home none x-systemd.requires=/data,bind 0 0" >> /etc/fstab'
+bash -c 'echo -e "master:/data/home\t/home\tnfs\tdefaults\t0 0" >> /etc/fstab'
 mount -a
 setsebool -P use_nfs_home_dirs=on
 
