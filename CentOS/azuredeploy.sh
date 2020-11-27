@@ -334,7 +334,7 @@ yum -y install openmpi3-devel
 
 # This should be removed and fixed
 setenforce 0
-sed -i 's/SELINUX=enforcing/SELINUX=permissive/' /etc/sysconfig/selinux
+sed -i 's/SELINUX=enforcing/SELINUX=permissive/' /etc/selinux/config
 
 # Make sudo passwordless for AAD Admins
 echo '%aad_admins ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/aad_admins
