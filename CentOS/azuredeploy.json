@@ -233,7 +233,10 @@
 	  },
 	  "centOSVersion": {
 	    "value": "[variables('centOSVersion')]"
-	  }
+	  },
+          "nvidia": {
+            "value": "[contains(parameters('partitions')[copyIndex()], 'nvidia')]"
+          }
         },
         "template": {
           "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
@@ -292,6 +295,9 @@
 	    },
 	    "servicePrincipalSecret": {
 	      "type": "string"
+	    },
+	    "nvidia": {
+	      "type": "bool"
 	    }
           },
           "resources": [
@@ -391,8 +397,8 @@
                   ]
                 },
               {
-                "name": "[concat(parameters('vmName'), copyindex(), '/', 'AADLoginForLinux')]",
-                "type": "Microsoft.Compute/virtualMachines/extensions",
+                "name": "AADLoginForLinux",
+                "type": "extensions",
                 "apiVersion": "2020-06-01",
                 "location": "[parameters('location')]",
                 "properties": {
@@ -404,6 +410,25 @@
                 "dependsOn": [
                   "[concat('Microsoft.Compute/virtualMachines/',parameters('vmName'), copyindex())]"
                 ]
+              },
+              {
+                "name": "nvidia",
+                "condition": "[parameters('nvidia')]",
+                "type": "extensions",
+                "apiVersion": "2015-06-15",
+                "location": "[parameters('location')]",
+                "dependsOn": [
+                  "[concat('Microsoft.Compute/virtualMachines/',parameters('vmName'), copyindex())]",
+                  "AADLoginForLinux"
+                ],
+                "properties": {
+                  "publisher": "Microsoft.HpcCompute",
+                  "type": "NvidiaGpuDriverLinux",
+                  "typeHandlerVersion": "1.3",
+                  "autoUpgradeMinorVersion": true,
+                  "settings": {
+                  }
+                }
               },
               {
                 "apiVersion": "2020-06-01",
