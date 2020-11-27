@@ -118,6 +118,8 @@ mv /home/* /data/home/
 echo -e "/data/home\t/home\tnone\tx-systemd.requires=/data,bind\t0 0" >> /etc/fstab
 mount /home
 restorecon /home
+# Prep shared files
+mkdir -m 711 /data/system
 
 echo "/data *(rw,sync,no_root_squash)" > /etc/exports
 exportfs -a
@@ -281,6 +283,7 @@ EOB
 
 # Loop through all worker nodes, update hosts file and slurm config
 for ((i=0;i<$PARTITION_COUNT;i++)); do
+  NVIDIA_ARGS=""
   NODE_COUNT=$(echo $JSON | jq -r ".[$i].scaleNumber")
   NODE_PARAMS=$(echo $JSON | jq -r ".[$i].slurmParameters")
   WORKER_NAME=$(echo $JSON | jq -r ".[$i].name")
@@ -288,7 +291,7 @@ for ((i=0;i<$PARTITION_COUNT;i++)); do
   NVIDIA_COUNT=$(echo $JSON | jq -r ".[$i].nvidiaCount")
   lastvm=`expr $NODE_COUNT - 1`
 
-  if [ -n "$NVIDIA_CARD" ];then
+  if [ "$NVIDIA_CARD" != "null" ];then
     NVIDIA_ARGS="Gres=gpu:$NVIDIA_CARD:$NVIDIA_COUNT"
     for ((card=0;card<$NVIDIA_COUNT;card++)); do
       echo "NodeName=${WORKER_NAME}[0-${lastvm}] Name=gpu Type=$NVIDIA_CARD File=/dev/nvidia${card}" >> /data/system/gres.conf
@@ -325,9 +328,6 @@ SSHDCONFIG=/tmp/sshd_config.$$
 wget $TEMPLATE_BASE/sshd_config -O $SSHDCONFIG
 SSHCONFIG=/tmp/ssh_config.$$
 wget $TEMPLATE_BASE/ssh_config -O $SSHCONFIG
-
-# Prep shared files
-mkdir -m 711 /data/system
 
 # Update slurm.conf with the number of CPUs detected on the compute nodes
 # sudo -iu $ADMIN_USERNAME /usr/bin/ansible-playbook create_slurm_conf.yml
