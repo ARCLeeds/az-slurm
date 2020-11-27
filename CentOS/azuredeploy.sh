@@ -288,7 +288,7 @@ for ((i=0;i<$PARTITION_COUNT;i++)); do
   NVIDIA_COUNT=$(echo $JSON | jq -r ".[$i].nvidiaCount")
   lastvm=`expr $NODE_COUNT - 1`
 
-  if [ $NVIDIA != "false" ]; then
+  if [ -n "$NVIDIA_CARD" ];then
     NVIDIA_ARGS="Gres=gpu:$NVIDIA_CARD:$NVIDIA_COUNT"
     for ((card=0;card<$NVIDIA_COUNT;card++)); do
       echo "NodeName=${WORKER_NAME}[0-${lastvm}] Name=gpu Type=$NVIDIA_CARD File=/dev/nvidia${card}" >> /data/system/gres.conf
