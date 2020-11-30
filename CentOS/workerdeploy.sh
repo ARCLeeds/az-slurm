@@ -50,7 +50,9 @@ systemctl enable munge
 systemctl start munge
 rm -f /etc/slurm/slurm.conf
 ln -s /data/system/slurm.conf /etc/slurm/slurm.conf
-ln -s /data/system/slurm.conf /etc/slurm/gres.conf
+ln -s /data/system/gres.conf /etc/slurm/gres.conf
+ln -s /data/system/cgroup.conf /etc/slurm/cgroup.conf
+ln -s /data/system/cgroup_allowed.conf /etc/slurm/cgroup_allowed.conf
 systemctl enable slurmd
 
 # Install OpenMPI

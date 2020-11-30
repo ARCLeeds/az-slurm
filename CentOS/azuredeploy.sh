@@ -231,7 +231,7 @@ ControlMachine=$MASTER_NAME
 #MailProg=/bin/mail
 MpiDefault=none
 #MpiParams=ports=#-#
-ProctrackType=proctrack/pgid
+ProctrackType=proctrack/cgroup
 ReturnToService=1
 SlurmctldPidFile=/var/run/slurmctld.pid
 #SlurmctldPort=6817
@@ -242,7 +242,7 @@ SlurmUser=slurm
 #SlurmdUser=root
 StateSaveLocation=/var/spool/slurmd
 SwitchType=switch/none
-TaskPlugin=task/none
+TaskPlugin=task/cgroup
 #
 #
 # TIMERS
@@ -255,7 +255,8 @@ TaskPlugin=task/none
 # SCHEDULING
 SchedulerType=sched/backfill
 #SchedulerPort=7321
-SelectType=select/linear
+SelectType=select/cons_tres
+SelectTypeParameters=CR_Core_Memory
 #
 #
 # LOGGING AND ACCOUNTING
@@ -281,11 +282,36 @@ $EXTRASLURM
 
 EOB
 
+cat > /data/system/cgroup.conf <<EOB
+CgroupMountpoint="/sys/fs/cgroup"
+CgroupAutomount=yes
+CgroupReleaseAgentDir="/etc/slurm/cgroup"
+AllowedDevicesFile="/etc/slurm/cgroup_allowed.conf"
+ConstrainCores=yes
+ConstrainRAMSpace=yes
+TaskAffinity=yes
+AllowedSwapSpace=50
+ConstrainSwapSpace=yes
+ConstrainDevices=yes
+EOB
+
+cat > /data/system/cgroup_allowed.conf <<EOB
+/dev/null
+/dev/urandom
+/dev/zero
+/dev/sda*
+/dev/cpu/*/*
+/dev/pts/*
+/dev/nvidia*
+/dev/infiniband/*
+EOB
+
 # Loop through all worker nodes, update hosts file and slurm config
 for ((i=0;i<$PARTITION_COUNT;i++)); do
   NVIDIA_ARGS=""
   NODE_COUNT=$(echo $JSON | jq -r ".[$i].scaleNumber")
-  NODE_PARAMS=$(echo $JSON | jq -r ".[$i].slurmParameters")
+  NODE_PARAMS=$(echo $JSON | jq -r ".[$i].nodeParameters")
+  PARTITION_PARAMS=$(echo $JSON | jq -r ".[$i].partitionParameters")
   WORKER_NAME=$(echo $JSON | jq -r ".[$i].name")
   NVIDIA_CARD=$(echo $JSON | jq -r ".[$i].nvidiaCard")
   NVIDIA_COUNT=$(echo $JSON | jq -r ".[$i].nvidiaCount")
@@ -299,7 +325,7 @@ for ((i=0;i<$PARTITION_COUNT;i++)); do
   fi
 
   echo NodeName="$WORKER_NAME[0-"$lastvm"] $NVIDIA_ARGS $NODE_PARAMS State=CLOUD" >> /etc/slurm/slurm.conf
-  echo PartitionName=$WORKER_NAME Nodes=$WORKER_NAME[0-"$lastvm"] MaxTime=10 State=UP >> /etc/slurm/slurm.conf
+  echo PartitionName=$WORKER_NAME Nodes=$WORKER_NAME[0-"$lastvm"] $PARTITION_PARAMS State=UP >> /etc/slurm/slurm.conf
   IP_BASE="${WORKER_IP_BASE}$i."
 
   for ((j=0;j<$NODE_COUNT;j++)); do
