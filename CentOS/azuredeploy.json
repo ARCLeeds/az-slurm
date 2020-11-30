@@ -179,6 +179,9 @@
           "ppgName": {
             "value": "[concat('ppg-', parameters('partitions')[copyIndex()].name)]"
           },
+          "availabilitySetName": {
+            "value": "[concat('avs-', parameters('partitions')[copyIndex()].name)]"
+          },
           "nicName": {
             "value": "[concat('nic-', parameters('partitions')[copyIndex()].name)]"
           },
@@ -246,6 +249,9 @@
             "ppgName": {
               "type": "string"
             },
+            "availabilitySetName": {
+              "type": "string"
+            },
             "location": {
               "type": "string",
               "defaultValue": "[resourceGroup().location]"
@@ -303,6 +309,19 @@
               "location": "[parameters('location')]"
             },
             {
+              "type": "Microsoft.Compute/availabilitySets",
+              "name": "[parameters('availabilitySetName')]",
+              "apiVersion": "2020-06-01",
+              "location": "[resourceGroup().location]",
+              "properties": {
+                "platformFaultDomainCount": 1,
+                "platformUpdateDomainCount": 1,
+                "proximityPlacementGroup": {
+                  "id": "[resourceId('Microsoft.Compute/proximityPlacementGroups', parameters('ppgName'))]"
+                }
+              }
+            },
+            {
               "apiVersion": "2020-06-01",
               "type": "Microsoft.Network/networkInterfaces",
               "name": "[concat(parameters('nicName'), copyindex())]",
@@ -336,13 +355,17 @@
               },
               "dependsOn": [
                 "nicLoop2",
-                "[parameters('ppgName')]"
+                "[parameters('ppgName')]",
+                "[parameters('availabilitySetName')]"
               ],
               "copy": {
                 "name": "foo",
                 "count": "[parameters('scaleNumber')]"
               },
               "properties": {
+                "availabilitySet": {
+                  "id": "[resourceId('Microsoft.Compute/availabilitySets',parameters('availabilitySetName'))]"
+                },
                 "proximityPlacementGroup": {
                   "id": "[resourceId('Microsoft.Compute/proximityPlacementGroups', parameters('ppgName'))]"
                 },
@@ -412,7 +435,8 @@
                 "name": "WorkerInstallation",
                 "location": "[parameters('location')]",
                 "dependsOn": [
-                  "[concat('Microsoft.Compute/virtualMachines/',parameters('vmName'), copyindex())]"
+                  "[concat('Microsoft.Compute/virtualMachines/',parameters('vmName'), copyindex())]",
+                  "AADLoginForLinux"
                 ],
                 "properties": {
                   "publisher": "Microsoft.Azure.Extensions",
