@@ -277,6 +277,8 @@ ResumeTimeout=600
 SuspendProgram=/home/slurm/slurm-suspend
 # Program used to resume a node
 ResumeProgram=/home/slurm/slurm-resume
+# Support the gpu resource type
+GresTypes=gpu
 
 $EXTRASLURM
 
