@@ -389,4 +389,7 @@ cat > /etc/cron.d/sync-aadpasswd <<EOB
 * * * * * root rsync -a /etc/aadpasswd /data/system/aadpasswd
 EOB
 
+# Install some local packages
+yum -y install glfw-devel opencl-headers
+
 exit 0

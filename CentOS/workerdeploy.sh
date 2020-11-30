@@ -65,6 +65,9 @@ echo '%aad_admins ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/aad_admins
 cat /data/system/hosts > /etc/hosts
 ln -sf /data/system/aadpasswd /etc/aadpasswd
 
+# Some random local installs
+yum -y install glfw-devel opencl-headers
+
 # If we've got nvidia, schedule a reboot, else start slurmd
 if lspci|grep -i nvidia;then
   shutdown -r +1
