@@ -313,13 +313,19 @@
               "name": "[parameters('availabilitySetName')]",
               "apiVersion": "2020-06-01",
               "location": "[resourceGroup().location]",
+	      "sku": {
+                "name": "Aligned"
+	      },
               "properties": {
                 "platformFaultDomainCount": 1,
                 "platformUpdateDomainCount": 1,
                 "proximityPlacementGroup": {
                   "id": "[resourceId('Microsoft.Compute/proximityPlacementGroups', parameters('ppgName'))]"
                 }
-              }
+              },
+              "dependsOn": [
+                "[parameters('ppgName')]"
+              ]
             },
             {
               "apiVersion": "2020-06-01",
