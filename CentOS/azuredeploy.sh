@@ -149,9 +149,10 @@ cd /tmp
 curl https://download.schedmd.com/slurm/slurm-${SLURMVERSION}.tar.bz2 | tar xj
 cd slurm-${SLURMVERSION}
 ./configure --prefix=/opt/slurm
-make
+make -j 4
 make install
 cd -
+rm -rf slurm-${SLURMVERSION}
 
 cat > /etc/systemd/system/slurmctld.service <<'EOB'
 [Unit]
