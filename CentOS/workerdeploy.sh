@@ -66,6 +66,10 @@ Delegate=yes
 WantedBy=multi-user.target
 EOB
 
+cat > /etc/profile.d/slurm.sh <<EOB
+export PATH=/opt/slurm/bin:$PATH
+EOB
+
 install -m 400 -o munge -g munge /data/system/munge.key /etc/munge/munge.key
 md5sum /data/system/munge.key /etc/munge/munge.key
 systemctl daemon-reload
