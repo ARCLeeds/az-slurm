@@ -196,7 +196,7 @@ echo Called: \$0 \$*
 
 ~/az-login
 
-HOSTS=\$(scontrol show hostnames \$1)
+HOSTS=\$(/opt/slurm/bin/scontrol show hostnames \$1)
 
 for host in \$HOSTS;do
   echo \$host Starting
@@ -225,7 +225,7 @@ echo Called: \$0 \$*
 
 ~/az-login
 
-HOSTS=\$(scontrol show hostnames \$1)
+HOSTS=\$(/opt/slurm/bin/scontrol show hostnames \$1)
 
 for host in \$HOSTS;do
   echo \$host Deallocating
