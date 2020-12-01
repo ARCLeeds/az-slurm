@@ -24,14 +24,15 @@ yum -y install nfs-utils
 systemctl enable rpcbind
 systemctl start rpcbind
 
-mkdir /data
-bash -c 'echo -e "master:/data\t/data\tnfs\tdefaults\t0 0" >> /etc/fstab'
-mount /data
-
-# Rejig to provide NFS home directories
-bash -c 'echo -e "master:/data/home\t/home\tnfs\tdefaults\t0 0" >> /etc/fstab'
-mount -a
 setsebool -P use_nfs_home_dirs=on
+
+mkdir /data
+cat >> /etc/fstab <<EOB
+master:/data	/data	nfs	defaults	0	0
+master:/data/home	/home	nfs	defaults	0 0
+master:/opt	/opt	nfs	defaults	0	0
+EOB
+mount -a
 
 rsync -a /data/system/ssh/* /etc/ssh/
 service sshd restart
@@ -42,17 +43,34 @@ cat /data/system/authorized_keys > /root/.ssh/authorized_keys
 chmod g-w /var/log
 useradd -c "Slurm scheduler" slurm
 yum -y install munge
-yum -y install /data/system/RPMS/x86_64/slurm-${SLURMVERSION}-1.el7.x86_64.rpm  /data/system/RPMS/x86_64/slurm-example-configs-${SLURMVERSION}-1.el7.x86_64.rpm /data/system/RPMS/x86_64/slurm-libpmi-${SLURMVERSION}-1.el7.x86_64.rpm /data/system/RPMS/x86_64/slurm-pam_slurm-${SLURMVERSION}-1.el7.x86_64.rpm /data/system/RPMS/x86_64/slurm-slurmd-${SLURMVERSION}-1.el7.x86_64.rpm
+
+cat > /etc/systemd/system/slurmd.service <<'EOB'
+[Unit]
+Description=Slurm node daemon
+After=munge.service network.target remote-fs.target opt.mount
+ConditionPathExists=/opt/slurm/etc/slurm.conf
+
+[Service]
+Type=forking
+EnvironmentFile=-/etc/sysconfig/slurmd
+ExecStart=/opt/slurm/sbin/slurmd $SLURMD_OPTIONS
+ExecReload=/bin/kill -HUP $MAINPID
+PIDFile=/var/run/slurmd.pid
+KillMode=process
+LimitNOFILE=51200
+LimitMEMLOCK=infinity
+LimitSTACK=infinity
+Delegate=yes
+
+[Install]
+WantedBy=multi-user.target
+EOB
+
 install -m 400 -o munge -g munge /data/system/munge.key /etc/munge/munge.key
 md5sum /data/system/munge.key /etc/munge/munge.key
 systemctl daemon-reload
 systemctl enable munge
 systemctl start munge
-rm -f /etc/slurm/slurm.conf
-ln -s /data/system/slurm.conf /etc/slurm/slurm.conf
-ln -s /data/system/gres.conf /etc/slurm/gres.conf
-ln -s /data/system/cgroup.conf /etc/slurm/cgroup.conf
-ln -s /data/system/cgroup_allowed.conf /etc/slurm/cgroup_allowed.conf
 systemctl enable slurmd
 
 # Install OpenMPI
@@ -72,5 +90,5 @@ yum -y install glfw-devel opencl-headers
 if lspci|grep -i nvidia;then
   shutdown -r +1
 else
-  systemctl start  slurmd
+  systemctl start slurmd
 fi
