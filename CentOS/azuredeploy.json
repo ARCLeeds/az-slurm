@@ -161,7 +161,7 @@
       "name": "[concat('partitionDeployment-', copyIndex())]",
       "copy": {
         "name": "deployPartitionsLoop",
-        "count": 2
+        "count": "[length(parameters('partitions'))]"
       },
       "dependsOn": [
         "[variables('networkSettings').virtualNetworkName]",
