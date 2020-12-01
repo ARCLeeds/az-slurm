@@ -14,18 +14,22 @@
     "partitions": {
       "value": [
         {
-          "name": "worker",
-	  "NodeSize": "Standard_D2s_v3",
-	  "ImageOffer": "CentOS",
-	  "scaleNumber": 1,
-	  "NodeCPUCount": 2
+          "name": "compute",
+          "NodeSize": "Standard_D8s_v3",
+          "ImageOffer": "CentOS",
+          "scaleNumber": 2,
+          "nodeParameters": "CPUs=8 RealMemory=32000",
+          "partitionParameters": "MaxTime=30 DefMemPerCPU=4000"
 	},
         {
-          "name": "more",
-	  "NodeSize": "Standard_D4s_v3",
-	  "ImageOffer": "CentOS",
-	  "scaleNumber": 2,
-	  "NodeCPUCount": 4
+          "name": "gpu",
+          "nvidiaCard": "p100",
+          "nvidiaCount": 1,
+          "NodeSize": "Standard_NC6s_v2",
+          "ImageOffer": "CentOS",
+          "scaleNumber": 1,
+          "nodeParameters": "CPUs=6 RealMemory=112000",
+          "partitionParameters": "MaxTime=30 DefMemPerCPU=18666"
 	}
       ]
     },
