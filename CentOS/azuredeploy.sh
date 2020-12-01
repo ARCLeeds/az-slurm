@@ -165,7 +165,7 @@ Type=forking
 EnvironmentFile=-/etc/sysconfig/slurmctld
 ExecStart=/opt/slurm/sbin/slurmctld $SLURMCTLD_OPTIONS
 ExecReload=/bin/kill -HUP $MAINPID
-PIDFile=/var/run/slurmd.pid
+PIDFile=/var/run/slurmctld.pid
 KillMode=process
 LimitNOFILE=51200
 
