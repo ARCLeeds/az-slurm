@@ -16,6 +16,13 @@ if lspci|grep -i nvidia;then
   yum -y install --nogpg http://developer.download.nvidia.com/compute/cuda/repos/rhel7/x86_64/${CUDA_REPO_PKG}
   yum -y upgrade --exclude=WALinuxAgent
   yum -y install cuda
+  cat > /etc/profile.d/nvidia.sh <<'EOB'
+export PATH=/usr/local/cuda/bin:$PATH
+export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
+export LIBRARY_PATH=/usr/local/cuda/lib64:$LIBRARY_PATH
+export CPATH=/usr/local/cuda/include:$CPATH
+EOB
+
 fi
 
 SLURMVERSION=20.02.6
@@ -66,8 +73,13 @@ Delegate=yes
 WantedBy=multi-user.target
 EOB
 
-cat > /etc/profile.d/slurm.sh <<EOB
+cat > /etc/profile.d/slurm.sh <<'EOB'
 export PATH=/opt/slurm/bin:$PATH
+export MANPATH=/opt/slurm/man:$MANPATH
+EOB
+
+cat > /etc/profile.d/zz-local.sh <<'EOB'
+. /opt/zz-local.sh >& /dev/null
 EOB
 
 install -m 400 -o munge -g munge /data/system/munge.key /etc/munge/munge.key

@@ -173,8 +173,9 @@ LimitNOFILE=51200
 WantedBy=multi-user.target
 EOB
 
-cat > /etc/profile.d/slurm.sh <<EOB
+cat > /etc/profile.d/slurm.sh <<'EOB'
 export PATH=/opt/slurm/bin:$PATH
+export MANPATH=/opt/slurm/share/man:$MANPATH
 EOB
 
 # Generate the munge key
