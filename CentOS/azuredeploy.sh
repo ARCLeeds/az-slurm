@@ -3,7 +3,7 @@
 set -x
 exec >& /root/azuredeploy.log.$$
 
-SLURMVERSION=20.02.6
+SLURMVERSION=20.02.7
 
 # This script can be found on https://raw.githubusercontent.com/ARCLeeds/az-slurm/main/CentOS/azuredeploy.sh
 # This script is part of azure deploy ARM template
