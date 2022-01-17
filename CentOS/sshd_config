@@ -33,3 +33,8 @@ AcceptEnv XMODIFIERS
 
 Subsystem	sftp	/usr/libexec/openssh/sftp-server
 
+Match User *@*,????????-????-????-????-????????????    # Added by aadsshlogin installer
+AuthenticationMethods publickey
+PubkeyAuthentication yes
+AuthorizedKeysCommand /usr/sbin/aad_certhandler %u %k
+AuthorizedKeysCommandUser root

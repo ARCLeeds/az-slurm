@@ -129,7 +129,7 @@
     "dnsName": "[concat('slurm-', uniqueString(resourceGroup().id))]",
     "imagePublisher": "OpenLogic",
     "headImageOffer": "CentOS",
-    "centOSVersion": "7_7-gen2",
+    "centOSVersion": "7_9-gen2",
     "publicIPAddressName": "publicip",
     "vmNameMaster": "master",
     "nicNameMaster": "nic",
@@ -280,7 +280,7 @@
             },
             "centOSVersion": {
               "type": "string",
-              "defaultValue": "7_8-gen2"
+              "defaultValue": "7_9-gen2"
             },
             "adminUsername": {
               "type": "string"
@@ -421,13 +421,13 @@
                   ]
                 },
               {
-                "name": "AADLoginForLinux",
+                "name": "AADSSHLoginForLinux",
                 "type": "extensions",
                 "apiVersion": "2020-06-01",
                 "location": "[parameters('location')]",
                 "properties": {
-                  "publisher": "Microsoft.Azure.ActiveDirectory.LinuxSSH",
-                  "type": "AADLoginForLinux",
+                  "publisher": "Microsoft.Azure.ActiveDirectory",
+                  "type": "AADSSHLoginForLinux",
                   "typeHandlerVersion": "1.0",
                   "autoUpgradeMinorVersion": true
                 },
@@ -442,7 +442,7 @@
                 "location": "[parameters('location')]",
                 "dependsOn": [
                   "[concat('Microsoft.Compute/virtualMachines/',parameters('vmName'), copyindex())]",
-                  "AADLoginForLinux"
+                  "AADSSHLoginForLinux"
                 ],
                 "properties": {
                   "publisher": "Microsoft.Azure.Extensions",
@@ -617,13 +617,13 @@
           ]
         },
         {
-          "name": "[concat(variables('vmNameMaster'),'/', 'AADLoginForLinux')]",
+          "name": "[concat(variables('vmNameMaster'),'/', 'AADSSHLoginForLinux')]",
           "type": "Microsoft.Compute/virtualMachines/extensions",
           "apiVersion": "2020-06-01",
           "location": "[parameters('location')]",
           "properties": {
-            "publisher": "Microsoft.Azure.ActiveDirectory.LinuxSSH",
-            "type": "AADLoginForLinux",
+            "publisher": "Microsoft.Azure.ActiveDirectory",
+            "type": "AADSSHLoginForLinux",
             "typeHandlerVersion": "1.0",
             "autoUpgradeMinorVersion": true
           },
