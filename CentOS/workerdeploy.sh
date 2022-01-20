@@ -10,12 +10,18 @@ sed -i 's/SELINUX=enforcing/SELINUX=permissive/' /etc/selinux/config
 yum -y install epel-release
 
 # Just discover if we have an nvidia card, and update and install a driver if so
-if lspci|grep -i nvidia;then
+#if lspci|grep -i nvidia;then
+# Install CUDA everywhere, as it also get us working OpenCL
+if true;then
   yum -y install dkms kernel-devel
   CUDA_REPO_PKG=cuda-repo-rhel7-10.2.89-1.x86_64.rpm
   yum -y install --nogpg http://developer.download.nvidia.com/compute/cuda/repos/rhel7/x86_64/${CUDA_REPO_PKG}
   yum -y upgrade --exclude=WALinuxAgent
-  yum -y install cuda
+  PACKAGE=cuda
+  if lspci|grep -i "Tesla T4";then
+    PACKAGE="nvidia-driver-branch-470.x86_64 cuda"
+  fi
+  yum -y install $PACKAGE
   cat > /etc/profile.d/nvidia.sh <<'EOB'
 export PATH=/usr/local/cuda/bin:$PATH
 export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
