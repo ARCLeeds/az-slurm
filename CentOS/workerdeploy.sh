@@ -31,8 +31,6 @@ EOB
 
 fi
 
-SLURMVERSION=20.02.6
-
 yum -y install nfs-utils
 systemctl enable rpcbind
 systemctl start rpcbind
