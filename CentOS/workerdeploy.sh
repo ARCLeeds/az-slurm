@@ -108,6 +108,7 @@ yum -y install glfw-devel opencl-headers
 
 # If we've got nvidia, schedule a reboot, else start slurmd
 if lspci|grep -i nvidia;then
+  systemctl enable nvidia-persistenced
   shutdown -r +1
 else
   systemctl start slurmd
