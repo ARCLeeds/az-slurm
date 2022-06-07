@@ -17,9 +17,9 @@ if true;then
   CUDA_REPO_PKG=cuda-repo-rhel7-10.2.89-1.x86_64.rpm
   yum -y install --nogpg http://developer.download.nvidia.com/compute/cuda/repos/rhel7/x86_64/${CUDA_REPO_PKG}
   yum -y upgrade --exclude=WALinuxAgent
-  PACKAGE=cuda
+  PACKAGE=cuda-11-4
   if lspci|grep -i "Tesla T4";then
-    PACKAGE="nvidia-driver-branch-470.x86_64 cuda"
+    PACKAGE+=" nvidia-driver-branch-470.x86_64"
   fi
   yum -y install $PACKAGE
   cat > /etc/profile.d/nvidia.sh <<'EOB'
