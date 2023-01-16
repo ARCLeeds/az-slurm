@@ -21,7 +21,7 @@ if true;then
   if lspci|grep -i "Tesla T4";then
     PACKAGE+=" nvidia-driver-branch-470.x86_64"
   fi
-  yum -y install $PACKAGE
+  yum -y install --nogpg $PACKAGE
   cat > /etc/profile.d/nvidia.sh <<'EOB'
 export PATH=/usr/local/cuda/bin:$PATH
 export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
